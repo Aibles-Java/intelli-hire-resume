@@ -11,10 +11,10 @@ CREATE TABLE skills (
     description TEXT,
     aliases JSON,
     is_active BOOLEAN NOT NULL DEFAULT true,
-    created_at TIMESTAMP NOT NULL,
-    created_by VARCHAR(36) NOT NULL,
-    last_updated_at TIMESTAMP,
-    last_updated_by VARCHAR(36)
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(36) NOT NULL DEFAULT 'system',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by VARCHAR(36)
 );
 
 -- Create indexes for skills table
@@ -29,10 +29,10 @@ CREATE TABLE resumes (
     title VARCHAR(255),
     status VARCHAR(20) NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT true,
-    created_at TIMESTAMP NOT NULL,
-    created_by VARCHAR(36) NOT NULL,
-    last_updated_at TIMESTAMP,
-    last_updated_by VARCHAR(36)
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(36) NOT NULL DEFAULT 'system',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by VARCHAR(36)
 );
 
 -- Create indexes for resumes table
@@ -51,10 +51,10 @@ CREATE TABLE resume_files (
     object_bucket VARCHAR(100) NOT NULL,
     object_key TEXT NOT NULL,
     object_etag VARCHAR(100),
-    created_at TIMESTAMP NOT NULL,
-    created_by VARCHAR(36) NOT NULL,
-    last_updated_at TIMESTAMP,
-    last_updated_by VARCHAR(36),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(36) NOT NULL DEFAULT 'system',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by VARCHAR(36),
     CONSTRAINT fk_resume_files_resume FOREIGN KEY (resume_id) REFERENCES resumes(id)
 );
 
@@ -71,12 +71,12 @@ CREATE TABLE resume_parse_jobs (
     progress INT NOT NULL DEFAULT 0,
     retry_count INT NOT NULL DEFAULT 0,
     error_message TEXT,
-    created_at TIMESTAMP NOT NULL,
-    created_by VARCHAR(36) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(36) NOT NULL DEFAULT 'system',
     started_at TIMESTAMP,
     finished_at TIMESTAMP,
-    last_updated_at TIMESTAMP,
-    last_updated_by VARCHAR(36),
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by VARCHAR(36),
     CONSTRAINT fk_resume_parse_jobs_resume FOREIGN KEY (resume_id) REFERENCES resumes(id)
 );
 
@@ -98,10 +98,10 @@ CREATE TABLE resume_skills (
     evidence_text VARCHAR(500),
     is_primary BOOLEAN NOT NULL DEFAULT false,
     extracted_at TIMESTAMP,
-    created_at TIMESTAMP NOT NULL,
-    created_by VARCHAR(36) NOT NULL,
-    last_updated_at TIMESTAMP,
-    last_updated_by VARCHAR(36),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(36) NOT NULL DEFAULT 'system',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by VARCHAR(36),
     CONSTRAINT fk_resume_skills_resume FOREIGN KEY (resume_id) REFERENCES resumes(id),
     CONSTRAINT fk_resume_skills_skill FOREIGN KEY (skill_id) REFERENCES skills(id),
     CONSTRAINT uk_resume_skills_resume_skill UNIQUE (resume_id, skill_id)
@@ -123,10 +123,10 @@ CREATE TABLE resume_experiences (
     end_date DATE,
     description TEXT,
     is_current BOOLEAN NOT NULL DEFAULT false,
-    created_at TIMESTAMP NOT NULL,
-    created_by VARCHAR(36) NOT NULL,
-    last_updated_at TIMESTAMP,
-    last_updated_by VARCHAR(36),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(36) NOT NULL DEFAULT 'system',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by VARCHAR(36),
     CONSTRAINT fk_resume_experiences_resume FOREIGN KEY (resume_id) REFERENCES resumes(id)
 );
 
@@ -145,10 +145,10 @@ CREATE TABLE resume_educations (
     start_year INT,
     end_year INT,
     description TEXT,
-    created_at TIMESTAMP NOT NULL,
-    created_by VARCHAR(36) NOT NULL,
-    last_updated_at TIMESTAMP,
-    last_updated_by VARCHAR(36),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(36) NOT NULL DEFAULT 'system',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by VARCHAR(36),
     CONSTRAINT fk_resume_educations_resume FOREIGN KEY (resume_id) REFERENCES resumes(id)
 );
 
@@ -166,10 +166,10 @@ CREATE TABLE resume_contacts (
     location VARCHAR(255),
     linkedin_url VARCHAR(255),
     other_info TEXT,
-    created_at TIMESTAMP NOT NULL,
-    created_by VARCHAR(36) NOT NULL,
-    last_updated_at TIMESTAMP,
-    last_updated_by VARCHAR(36),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(36) NOT NULL DEFAULT 'system',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by VARCHAR(36),
     CONSTRAINT fk_resume_contacts_resume FOREIGN KEY (resume_id) REFERENCES resumes(id)
 );
 
@@ -188,8 +188,8 @@ CREATE TABLE resume_skill_profiles (
     signals JSON,
     generated_at TIMESTAMP,
     generated_by VARCHAR(36),
-    last_updated_at TIMESTAMP,
-    last_updated_by VARCHAR(36),
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by VARCHAR(36),
     CONSTRAINT fk_resume_skill_profiles_resume FOREIGN KEY (resume_id) REFERENCES resumes(id)
 );
 
