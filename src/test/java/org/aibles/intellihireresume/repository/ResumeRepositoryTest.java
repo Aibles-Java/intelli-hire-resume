@@ -104,7 +104,7 @@ class ResumeRepositoryTest {
                 .id("newer-resume-101")
                 .userId(testUserId)
                 .title("Newer Resume")
-                .status(ResumeStatus.PROCESSING)
+                .status(ResumeStatus.UPLOADED)
                 .isActive(true)
                 .createdAt(LocalDateTime.now().plusMinutes(1))
                 .updatedAt(LocalDateTime.now().plusMinutes(1))
@@ -207,7 +207,7 @@ class ResumeRepositoryTest {
                 .id("new-resume-123")
                 .userId("new-user-456")
                 .title("New Resume")
-                .status(ResumeStatus.PROCESSING)
+                .status(ResumeStatus.UPLOADED)
                 .isActive(true)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -222,7 +222,7 @@ class ResumeRepositoryTest {
         assertThat(savedResume.getId()).isNotNull();
         assertThat(savedResume.getUserId()).isEqualTo("new-user-456");
         assertThat(savedResume.getTitle()).isEqualTo("New Resume");
-        assertThat(savedResume.getStatus()).isEqualTo(ResumeStatus.PROCESSING);
+        assertThat(savedResume.getStatus()).isEqualTo(ResumeStatus.UPLOADED);
         assertThat(savedResume.getIsActive()).isTrue();
 
         // Verify it can be found in database
@@ -311,7 +311,7 @@ class ResumeRepositoryTest {
                 .id("null-title-resume")
                 .userId(testUserId)
                 .title(null)
-                .status(ResumeStatus.PROCESSING)
+                .status(ResumeStatus.UPLOADED)
                 .isActive(true)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -337,7 +337,7 @@ class ResumeRepositoryTest {
                 .id("null-title-resume")
                 .userId(testUserId)
                 .title(null)
-                .status(ResumeStatus.PROCESSING)
+                .status(ResumeStatus.UPLOADED)
                 .isActive(true)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())

@@ -27,7 +27,6 @@ public class ResumeMapper {
         }
 
         return Resume.builder()
-                .userId(request.getUserId())
                 .title(request.getTitle())
                 .build();
     }

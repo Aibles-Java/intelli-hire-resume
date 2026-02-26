@@ -27,4 +27,7 @@ public class Resume extends BaseEntity {
     @Builder.Default
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
+
+    @Column(name = "raw_text", columnDefinition = "TEXT")
+    private String rawText;
 }

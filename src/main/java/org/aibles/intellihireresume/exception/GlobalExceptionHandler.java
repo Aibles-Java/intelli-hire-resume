@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -76,6 +77,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(BaseResponse.error(ErrorCode.COM_003.getMessage(), null));
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<BaseResponse<Void>> handleMissingRequestHeaderException(
+            MissingRequestHeaderException ex) {
+        log.warn("MissingRequestHeaderException: {}", ex.getMessage());
+
+        List<FieldError> errors = List.of(FieldError.builder()
+                .field(ex.getHeaderName())
+                .message("Missing required header: " + ex.getHeaderName())
+                .rejectedValue(null)
+                .build());
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(BaseResponse.error(ErrorCode.COM_004.getCode(), errors));
     }
 
     @ExceptionHandler(Exception.class)

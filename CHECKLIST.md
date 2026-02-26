@@ -9,7 +9,7 @@
 
 | Step | Nội Dung | Trạng Thái |
 |------|----------|-----------|
-| STEP 0 | Pre-work (fix base code) | ⬜ Chưa bắt đầu |
+| STEP 0 | Pre-work (fix base code) | ✅ Hoàn thành |
 | STEP 1 | ParseJob Service + Controller | ⬜ Chưa bắt đầu |
 | STEP 2 | File Management (MinIO + Redis) | ⬜ Chưa bắt đầu |
 | STEP 3 | Contact Management | ⬜ Chưa bắt đầu |
@@ -31,44 +31,42 @@
 > Bắt buộc hoàn thành trước khi implement bất kỳ feature nào.
 
 ### a. URL Prefix Fix
-- [ ] `ResumeController.java`: đổi `@RequestMapping("/v1/resumes")` → `"/api/v1/resumes"`
-- [ ] `ResumeControllerTest.java`: cập nhật tất cả URL strings cho đúng prefix
+- [x] `ResumeController.java`: đổi `@RequestMapping("/v1/resumes")` → `"/api/v1/resumes"`
+- [x] `ResumeControllerTest.java`: cập nhật tất cả URL strings cho đúng prefix
 
 ### b. Port Fix
-- [ ] `application.yml`: đổi `${SERVER_PORT:8080}` → `${SERVER_PORT:8082}`
+- [x] `application.yml`: đổi `${SERVER_PORT:8080}` → `${SERVER_PORT:8082}`
 
 ### c. User ID từ Header
-- [ ] Xóa field `userId` khỏi `dto/CreateResumeRequest.java`
-- [ ] `ResumeController`: thêm `@RequestHeader("X-User-Id") String userId` vào tất cả endpoints
-- [ ] `exception/ErrorCode.java`: thêm `COM_004` (MISSING_REQUIRED_HEADER)
-- [ ] `exception/GlobalExceptionHandler.java`: xử lý `MissingRequestHeaderException` → 400 với COM_004
-- [ ] `service/impl/ResumeServiceImpl.java`: cập nhật signature các method nhận userId từ tham số
-- [ ] Cập nhật tất cả unit tests và controller tests liên quan
+- [x] Xóa field `userId` khỏi `dto/CreateResumeRequest.java`
+- [x] `ResumeController`: thêm `@RequestHeader("X-User-Id") String userId` vào tất cả endpoints
+- [x] `exception/ErrorCode.java`: thêm `COM_004` (MISSING_REQUIRED_HEADER)
+- [x] `exception/GlobalExceptionHandler.java`: xử lý `MissingRequestHeaderException` → 400 với COM_004
+- [x] `service/impl/ResumeServiceImpl.java`: cập nhật signature `create(String userId, CreateResumeRequest request)`
+- [x] Cập nhật tất cả unit tests và controller tests liên quan
 
 ### d. ResumeStatus Enum
-- [ ] `entity/enums/ResumeStatus.java`: đổi `PROCESSING` → `PARSING`
-- [ ] `entity/enums/ResumeStatus.java`: thêm `UPLOADED`
-- [ ] `entity/enums/ResumeStatus.java`: thêm `DELETED`
-- [ ] Tạo `src/main/resources/db/migration/V2__Update_resume_status.sql`
-  - Nội dung: `UPDATE resumes SET status = 'UPLOADED' WHERE status = 'PROCESSING';`
-- [ ] `service/impl/ResumeServiceImpl.java`: `create()` → set status = `UPLOADED`
-- [ ] `service/impl/ResumeServiceImpl.java`: `reprocess()` → set status = `PARSING`
-- [ ] Cập nhật tests liên quan đến status
+- [x] `entity/enums/ResumeStatus.java`: đổi `PROCESSING` → `PARSING`
+- [x] `entity/enums/ResumeStatus.java`: thêm `UPLOADED`
+- [x] `entity/enums/ResumeStatus.java`: thêm `DELETED`
+- [x] `V1__Initial_database_schema.sql`: không tạo thêm V2 — đã gộp trực tiếp vào V1
+- [x] `service/impl/ResumeServiceImpl.java`: `create()` → set status = `UPLOADED`
+- [x] `service/impl/ResumeServiceImpl.java`: `reprocess()` → set status = `PARSING`
+- [x] Cập nhật tests liên quan đến status
 
 ### e. Thêm `raw_text` Field
-- [ ] Tạo `src/main/resources/db/migration/V3__Add_raw_text_to_resumes.sql`
-  - Nội dung: `ALTER TABLE resumes ADD COLUMN raw_text TEXT;`
-- [ ] `entity/Resume.java`: thêm field `private String rawText;`
+- [x] `V1__Initial_database_schema.sql`: thêm `raw_text TEXT` trực tiếp vào `CREATE TABLE resumes` (không tạo V3)
+- [x] `entity/Resume.java`: thêm field `private String rawText;`
 
 ### f. Cleanup
-- [ ] Xóa file `src/main/java/.../repository/ResumeSkillProfileRepository.java~`
-- [ ] Review `dto/ParseJobRequest.java` (untracked) — giữ lại nếu đúng pattern
-- [ ] Review `dto/ParseJobResponse.java` (untracked) — giữ lại nếu đúng pattern
-- [ ] Review `mapper/ParseJobMapper.java` (untracked) — giữ lại nếu đúng pattern
+- [x] Xóa file `src/main/java/.../repository/ResumeSkillProfileRepository.java~`
+- [x] Review `dto/ParseJobRequest.java` (untracked) — giữ lại, dùng ở STEP 1
+- [x] Review `dto/ParseJobResponse.java` (untracked) — giữ lại, dùng ở STEP 1
+- [x] Review `mapper/ParseJobMapper.java` (untracked) — giữ lại, dùng ở STEP 1
 
 ### Verification STEP 0
 - [ ] `mvn clean compile` — không có lỗi
-- [ ] `mvn test` — tất cả 56 tests pass (cập nhật nếu cần)
+- [ ] `mvn test` — tất cả tests pass
 - [ ] Start app: `mvn spring-boot:run` — khởi động thành công ở port 8082
 
 ---

@@ -47,12 +47,11 @@ class ResumeServiceImplTest {
     @BeforeEach
     void setUp() {
         resumeService = new ResumeServiceImpl(resumeRepository, resumeMapper);
-        
+
         testUserId = "user-123";
         testResumeId = "resume-456";
 
         createRequest = CreateResumeRequest.builder()
-                .userId(testUserId)
                 .title("Software Engineer Resume")
                 .build();
 
@@ -60,7 +59,7 @@ class ResumeServiceImplTest {
                 .id(testResumeId)
                 .userId(testUserId)
                 .title("Software Engineer Resume")
-                .status(ResumeStatus.PROCESSING)
+                .status(ResumeStatus.UPLOADED)
                 .isActive(true)
                 .createdAt(LocalDateTime.of(2024, 1, 22, 14, 30, 0))
                 .updatedAt(LocalDateTime.of(2024, 1, 22, 14, 30, 0))
@@ -72,7 +71,7 @@ class ResumeServiceImplTest {
                 .id(testResumeId)
                 .userId(testUserId)
                 .title("Software Engineer Resume")
-                .status(ResumeStatus.PROCESSING)
+                .status(ResumeStatus.UPLOADED)
                 .isActive(true)
                 .createdAt(LocalDateTime.of(2024, 1, 22, 14, 30, 0))
                 .updatedAt(LocalDateTime.of(2024, 1, 22, 14, 30, 0))
@@ -90,23 +89,23 @@ class ResumeServiceImplTest {
         when(resumeRepository.save(any(Resume.class))).thenReturn(resume);
 
         // When
-        ResumeResponse result = resumeService.create(createRequest);
+        ResumeResponse result = resumeService.create(testUserId, createRequest);
 
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(testResumeId);
         assertThat(result.getUserId()).isEqualTo(testUserId);
         assertThat(result.getTitle()).isEqualTo("Software Engineer Resume");
-        assertThat(result.getStatus()).isEqualTo(ResumeStatus.PROCESSING);
+        assertThat(result.getStatus()).isEqualTo(ResumeStatus.UPLOADED);
         assertThat(result.getIsActive()).isTrue();
 
         verify(resumeRepository).existsByUserIdAndTitleActive(testUserId, "Software Engineer Resume");
         verify(resumeRepository).save(any(Resume.class));
 
-        // Verify entity was set with defaults
-        verify(resumeRepository).save(argThat(savedResume -> 
-            savedResume.getStatus() == ResumeStatus.PROCESSING &&
-            savedResume.getIsActive().equals(true)
+        verify(resumeRepository).save(argThat(savedResume ->
+            savedResume.getStatus() == ResumeStatus.UPLOADED &&
+            savedResume.getIsActive().equals(true) &&
+            savedResume.getUserId().equals(testUserId)
         ));
     }
 
@@ -114,7 +113,6 @@ class ResumeServiceImplTest {
     void create_ShouldCreateResume_WhenTitleIsNull() {
         // Given
         CreateResumeRequest requestWithNullTitle = CreateResumeRequest.builder()
-                .userId(testUserId)
                 .title(null)
                 .build();
 
@@ -122,7 +120,7 @@ class ResumeServiceImplTest {
                 .id(testResumeId)
                 .userId(testUserId)
                 .title(null)
-                .status(ResumeStatus.PROCESSING)
+                .status(ResumeStatus.UPLOADED)
                 .isActive(true)
                 .createdAt(LocalDateTime.of(2024, 1, 22, 14, 30, 0))
                 .updatedAt(LocalDateTime.of(2024, 1, 22, 14, 30, 0))
@@ -131,7 +129,7 @@ class ResumeServiceImplTest {
         when(resumeRepository.save(any(Resume.class))).thenReturn(resumeWithNullTitle);
 
         // When
-        ResumeResponse result = resumeService.create(requestWithNullTitle);
+        ResumeResponse result = resumeService.create(testUserId, requestWithNullTitle);
 
         // Then
         assertThat(result).isNotNull();
@@ -147,7 +145,7 @@ class ResumeServiceImplTest {
                 .thenReturn(true);
 
         // When & Then
-        assertThatThrownBy(() -> resumeService.create(createRequest))
+        assertThatThrownBy(() -> resumeService.create(testUserId, createRequest))
                 .isInstanceOf(DuplicateException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.RES_004.getCode());
 
@@ -201,7 +199,6 @@ class ResumeServiceImplTest {
                 .build();
 
         List<Resume> resumes = Arrays.asList(resume, resume2);
-
         when(resumeRepository.findByUserIdActive(testUserId)).thenReturn(resumes);
 
         // When
@@ -227,7 +224,6 @@ class ResumeServiceImplTest {
 
         // Then
         assertThat(result).isEmpty();
-
         verify(resumeRepository).findByUserIdActive(testUserId);
     }
 
@@ -236,7 +232,6 @@ class ResumeServiceImplTest {
     void update_ShouldUpdateResume_WhenValidRequest() {
         // Given
         CreateResumeRequest updateRequest = CreateResumeRequest.builder()
-                .userId(testUserId)
                 .title("Updated Resume Title")
                 .build();
 
@@ -244,15 +239,13 @@ class ResumeServiceImplTest {
                 .id(testResumeId)
                 .userId(testUserId)
                 .title("Updated Resume Title")
-                .status(ResumeStatus.PROCESSING)
+                .status(ResumeStatus.UPLOADED)
                 .isActive(true)
                 .createdAt(LocalDateTime.of(2024, 1, 22, 14, 30, 0))
                 .updatedAt(LocalDateTime.of(2024, 1, 22, 15, 0, 0))
                 .build();
 
         when(resumeRepository.findByIdActive(testResumeId)).thenReturn(Optional.of(resume));
-        when(resumeRepository.existsByUserIdAndTitleActive(testUserId, "Updated Resume Title"))
-                .thenReturn(false);
         when(resumeRepository.save(any(Resume.class))).thenReturn(updatedResume);
 
         // When
@@ -264,7 +257,6 @@ class ResumeServiceImplTest {
         assertThat(result.getTitle()).isEqualTo("Updated Resume Title");
 
         verify(resumeRepository).findByIdActive(testResumeId);
-        verify(resumeRepository).existsByUserIdAndTitleActive(testUserId, "Updated Resume Title");
         verify(resumeRepository).save(any(Resume.class));
     }
 
@@ -279,7 +271,6 @@ class ResumeServiceImplTest {
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.RES_001.getCode());
 
         verify(resumeRepository).findByIdActive(testResumeId);
-        verify(resumeRepository, never()).existsByUserIdAndTitleActive(any(), any());
         verify(resumeRepository, never()).save(any());
     }
 
@@ -287,12 +278,11 @@ class ResumeServiceImplTest {
     void update_ShouldThrowDuplicateException_WhenTitleAlreadyExists() {
         // Given
         CreateResumeRequest updateRequest = CreateResumeRequest.builder()
-                .userId(testUserId)
                 .title("Existing Title")
                 .build();
 
         when(resumeRepository.findByIdActive(testResumeId)).thenReturn(Optional.of(resume));
-        when(resumeRepository.existsByUserIdAndTitleActive(testUserId, "Existing Title"))
+        when(resumeRepository.existsByUserIdAndTitleActiveExcluding(testUserId, "Existing Title", testResumeId))
                 .thenReturn(true);
 
         // When & Then
@@ -301,7 +291,7 @@ class ResumeServiceImplTest {
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.RES_004.getCode());
 
         verify(resumeRepository).findByIdActive(testResumeId);
-        verify(resumeRepository).existsByUserIdAndTitleActive(testUserId, "Existing Title");
+        verify(resumeRepository).existsByUserIdAndTitleActiveExcluding(testUserId, "Existing Title", testResumeId);
         verify(resumeRepository, never()).save(any());
     }
 
@@ -309,7 +299,6 @@ class ResumeServiceImplTest {
     void update_ShouldAllowNullTitle() {
         // Given
         CreateResumeRequest updateRequest = CreateResumeRequest.builder()
-                .userId(testUserId)
                 .title(null)
                 .build();
 
@@ -317,7 +306,7 @@ class ResumeServiceImplTest {
                 .id(testResumeId)
                 .userId(testUserId)
                 .title(null)
-                .status(ResumeStatus.PROCESSING)
+                .status(ResumeStatus.UPLOADED)
                 .isActive(true)
                 .build();
 
@@ -331,7 +320,7 @@ class ResumeServiceImplTest {
         assertThat(result).isNotNull();
         assertThat(result.getTitle()).isNull();
         verify(resumeRepository).findByIdActive(testResumeId);
-        verify(resumeRepository, never()).existsByUserIdAndTitleActive(any(), any());
+        verify(resumeRepository, never()).existsByUserIdAndTitleActiveExcluding(any(), any(), any());
         verify(resumeRepository).save(any(Resume.class));
     }
 
@@ -346,7 +335,7 @@ class ResumeServiceImplTest {
 
         // Then
         verify(resumeRepository).findByIdActive(testResumeId);
-        verify(resumeRepository).save(argThat(savedResume -> 
+        verify(resumeRepository).save(argThat(savedResume ->
             savedResume.getIsActive().equals(false)
         ));
     }
@@ -367,7 +356,7 @@ class ResumeServiceImplTest {
 
     // REPROCESS TESTS
     @Test
-    void reprocess_ShouldSetStatusToProcessing_WhenResumeExists() {
+    void reprocess_ShouldSetStatusToParsing_WhenResumeExists() {
         // Given
         Resume failedResume = Resume.builder()
                 .id(testResumeId)
@@ -383,7 +372,7 @@ class ResumeServiceImplTest {
                 .id(testResumeId)
                 .userId(testUserId)
                 .title("Software Engineer Resume")
-                .status(ResumeStatus.PROCESSING)
+                .status(ResumeStatus.PARSING)
                 .isActive(true)
                 .createdAt(LocalDateTime.of(2024, 1, 22, 14, 30, 0))
                 .updatedAt(LocalDateTime.of(2024, 1, 22, 15, 30, 0))
@@ -398,11 +387,11 @@ class ResumeServiceImplTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(testResumeId);
-        assertThat(result.getStatus()).isEqualTo(ResumeStatus.PROCESSING);
+        assertThat(result.getStatus()).isEqualTo(ResumeStatus.PARSING);
 
         verify(resumeRepository).findByIdActive(testResumeId);
-        verify(resumeRepository).save(argThat(savedResume -> 
-            savedResume.getStatus() == ResumeStatus.PROCESSING
+        verify(resumeRepository).save(argThat(savedResume ->
+            savedResume.getStatus() == ResumeStatus.PARSING
         ));
     }
 
@@ -422,10 +411,9 @@ class ResumeServiceImplTest {
 
     // EDGE CASE TESTS
     @Test
-    void create_ShouldValidateUniqueness_WhenTitleIsNotNull() {
+    void create_ShouldSkipUniquenessCheck_WhenTitleIsEmpty() {
         // Given
         CreateResumeRequest requestWithEmptyTitle = CreateResumeRequest.builder()
-                .userId(testUserId)
                 .title("")
                 .build();
 
@@ -433,31 +421,30 @@ class ResumeServiceImplTest {
                 .id(testResumeId)
                 .userId(testUserId)
                 .title("")
-                .status(ResumeStatus.PROCESSING)
+                .status(ResumeStatus.UPLOADED)
                 .isActive(true)
                 .build();
 
-        when(resumeRepository.existsByUserIdAndTitleActive(testUserId, "")).thenReturn(false);
         when(resumeRepository.save(any(Resume.class))).thenReturn(resumeWithEmptyTitle);
 
         // When
-        ResumeResponse result = resumeService.create(requestWithEmptyTitle);
+        ResumeResponse result = resumeService.create(testUserId, requestWithEmptyTitle);
 
         // Then
         assertThat(result).isNotNull();
-        verify(resumeRepository).existsByUserIdAndTitleActive(testUserId, "");
+        // Empty string is trimmed and isEmpty → uniqueness check is skipped
+        verify(resumeRepository, never()).existsByUserIdAndTitleActive(any(), any());
+        verify(resumeRepository).save(any(Resume.class));
     }
 
     @Test
-    void update_ShouldValidateUniqueness_WhenTitleIsNotNull() {
+    void update_ShouldSkipUniquenessCheck_WhenTitleIsEmpty() {
         // Given
         CreateResumeRequest updateRequest = CreateResumeRequest.builder()
-                .userId(testUserId)
                 .title("")
                 .build();
 
         when(resumeRepository.findByIdActive(testResumeId)).thenReturn(Optional.of(resume));
-        when(resumeRepository.existsByUserIdAndTitleActive(testUserId, "")).thenReturn(false);
         when(resumeRepository.save(any(Resume.class))).thenReturn(resume);
 
         // When
@@ -465,6 +452,8 @@ class ResumeServiceImplTest {
 
         // Then
         assertThat(result).isNotNull();
-        verify(resumeRepository).existsByUserIdAndTitleActive(testUserId, "");
+        // Empty string → uniqueness check is skipped
+        verify(resumeRepository, never()).existsByUserIdAndTitleActiveExcluding(any(), any(), any());
+        verify(resumeRepository).save(any(Resume.class));
     }
 }
