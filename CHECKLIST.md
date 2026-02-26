@@ -17,7 +17,12 @@
 | STEP 5 | Education Management | ⬜ Chưa bắt đầu |
 | STEP 6 | Skills (Catalog + CRUD + Profile) | ⬜ Chưa bắt đầu |
 | STEP 7 | Content Extraction Engine | ⬜ Chưa bắt đầu |
-| STEP 8 | Production Readiness | ⬜ Chưa bắt đầu |
+| STEP 8  | Production Readiness                       | ⬜ Chưa bắt đầu |
+| STEP 9  | Angular Project Setup + Core Architecture  | ⬜ Chưa bắt đầu |
+| STEP 10 | Resume & ParseJob UI                       | ⬜ Chưa bắt đầu |
+| STEP 11 | File Upload + Contact/Exp/Edu UI           | ⬜ Chưa bắt đầu |
+| STEP 12 | Skills & Skill Profile UI                  | ⬜ Chưa bắt đầu |
+| STEP 13 | Frontend Production Readiness              | ⬜ Chưa bắt đầu |
 
 ---
 
@@ -521,12 +526,180 @@
 
 ---
 
+---
+
+## STEP 9 — Angular Project Setup + Core Architecture
+
+> Tạo nền tảng Angular frontend tương tác với tất cả 32 REST API của backend.
+
+### Project Init
+- [ ] Khởi tạo project: `ng new intelli-hire-frontend --standalone`
+  - Thư mục: `intelli-hire-frontend/` tại root repo
+- [ ] Cài Angular Material: `ng add @angular/material`
+- [ ] Cấu hình lazy-loaded routing (`app.routes.ts`)
+
+### HTTP & Interceptors
+- [ ] `core/interceptors/auth.interceptor.ts`: tự động gắn header `X-User-Id` + `X-User-Role` vào mọi request (lấy từ localStorage)
+- [ ] `core/interceptors/error.interceptor.ts`: bắt HTTP 4xx/5xx → hiển thị snackbar message
+
+### Environment Config
+- [ ] `environments/environment.ts`: `apiUrl: 'http://localhost:8082'`
+- [ ] `environments/environment.prod.ts`: `apiUrl` lấy từ env variable (NGINX inject)
+
+### Core Services
+- [ ] `core/services/api.service.ts`: base service với generic `get`, `post`, `put`, `delete` methods
+
+### Shared Components
+- [ ] `shared/components/loading-spinner/` — overlay loading indicator
+- [ ] `shared/components/error-alert/` — hiển thị lỗi API dạng snackbar
+- [ ] `shared/components/confirm-dialog/` — dialog xác nhận trước khi xóa
+
+### Verification STEP 9
+- [ ] `ng serve` → app khởi động tại port 4200 không lỗi
+- [ ] Mọi HTTP request → header `X-User-Id` được gắn tự động (kiểm tra Network tab)
+- [ ] Gọi endpoint sai → snackbar lỗi hiển thị đúng message
+
+---
+
+## STEP 10 — Resume & ParseJob UI
+
+### Resume Feature (`features/resume/`)
+- [ ] `services/resume.service.ts`: gọi đầy đủ `/api/v1/resumes` endpoints (list, create, getById, update, delete, reprocess)
+- [ ] `pages/resume-list/`: bảng danh sách (title, status badge, createdAt), phân trang, nút Create/Delete
+- [ ] `pages/resume-create/`: reactive form tạo resume với validation
+- [ ] `pages/resume-detail/`: xem chi tiết + tabs (File, Contact, Experience, Education, Skills, Skill Profile)
+- [ ] `pages/resume-edit/`: form edit title/description
+- [ ] `components/resume-status-badge/`: chip màu theo `ResumeStatus`
+  - `UPLOADED` = xanh dương, `PARSING` = cam, `COMPLETED` = xanh lá, `FAILED` = đỏ
+
+### ParseJob Feature (`features/parse-job/`)
+- [ ] `services/parse-job.service.ts`: gọi `POST /api/v1/parse-jobs`, `GET .../cancel`
+- [ ] `components/parse-job-status/`: hiển thị status chip + progress bar
+- [ ] Polling: sau upload → `interval(3000)` poll `GET /api/v1/parse-jobs/{id}` đến khi `SUCCEEDED` hoặc `FAILED` → unsubscribe
+
+### Verification STEP 10
+- [ ] `GET /api/v1/resumes` → danh sách hiển thị đầy đủ các cột
+- [ ] Tạo resume → redirect sang trang detail
+- [ ] Resume status badge đổi màu theo giá trị từ server
+- [ ] ParseJob polling: sau 3s poll một lần, dừng khi job hoàn thành
+
+---
+
+## STEP 11 — File Upload + Contact / Experience / Education UI
+
+### File Upload (`features/file/`)
+- [ ] `services/resume-file.service.ts`: gọi upload, download, delete, getByResumeId
+- [ ] `components/file-upload/`: drag & drop zone (Angular CDK)
+  - Validate MIME type client-side (PDF/DOCX) → báo lỗi trước khi gọi API
+  - Validate size ≤ 5MB client-side → báo lỗi ngay
+  - Progress bar dùng `HttpRequest` + `reportProgress: true`
+  - Sau upload thành công → tự động tạo ParseJob và bắt đầu polling
+
+### Contact UI (`features/contact/`)
+- [ ] `services/resume-contact.service.ts`: gọi `GET`/`PUT /api/v1/resumes/{id}/contact`
+- [ ] `components/contact-form/`: reactive form upsert với validators
+  - `@Email` validator cho email
+  - Regex validator cho phone (VD: `^[+]?[\d\s\-]{7,15}$`)
+  - URL pattern validator cho LinkedIn URL
+
+### Experience UI (`features/experience/`)
+- [ ] `services/resume-experience.service.ts`: gọi list, create, update, delete
+- [ ] `components/experience-list/`: list với accordion expand panel
+- [ ] `components/experience-form/` (dialog): DatePicker `startDate`/`endDate`, checkbox `isCurrent` → tự động disable `endDate`
+
+### Education UI (`features/education/`)
+- [ ] `services/resume-education.service.ts`: gọi list, create, update, delete
+- [ ] `components/education-list/`: list với accordion
+- [ ] `components/education-form/` (dialog): year input (number) + validation (1900 ≤ năm ≤ năm hiện tại)
+
+### Verification STEP 11
+- [ ] Upload PDF → progress bar chạy → polling ParseJob tự khởi động
+- [ ] Upload file >5MB → lỗi hiển thị ngay, không gọi API
+- [ ] Upload `.txt` → lỗi MIME type, không gọi API
+- [ ] Contact form: email sai format → validator báo lỗi ngay tức thì
+- [ ] Experience `isCurrent=true` → field `endDate` disabled
+
+---
+
+## STEP 12 — Skills & Skill Profile UI
+
+### Skill Catalog (`features/skills/`)
+- [ ] `services/skill.service.ts`: gọi `GET /api/v1/skills`, `GET /api/v1/skills/{id}`, `GET /api/v1/skills/search?q=`
+- [ ] `components/skill-search/`: input với `debounceTime(300)` → gọi search API → autocomplete dropdown (Angular Material Autocomplete)
+
+### Resume Skills (`features/resume-skills/`)
+- [ ] `services/resume-skill.service.ts`: gọi list, create, update, delete
+- [ ] `components/resume-skill-list/`: chip list hiển thị skills (tên, proficiency level, years)
+- [ ] `components/add-skill-dialog/`: search catalog → chọn skill → nhập level/years → submit
+
+### Skill Profile (`features/skill-profile/`)
+- [ ] `services/resume-skill-profile.service.ts`: gọi get, generate, update
+- [ ] `components/skill-profile-card/`:
+  - Seniority badge: `JUNIOR` / `MID` / `SENIOR` / `PRINCIPAL`
+  - Top skills bar chart (dùng `ng2-charts` hoặc Chart.js)
+  - Summary text editable + signals list
+  - Nút "Generate Profile" → `POST .../skill-profile/generate` → polling đến khi có kết quả
+
+### Verification STEP 12
+- [ ] Nhập "java" → autocomplete hiện "Java" trong dropdown
+- [ ] Thêm skill đã có → server 409 → snackbar "Skill đã được thêm"
+- [ ] Xóa skill → confirm dialog → xóa thành công → chip biến mất
+- [ ] Generate profile → seniority badge cập nhật đúng (`JUNIOR`/`MID`/`SENIOR`/`PRINCIPAL`)
+
+---
+
+## STEP 13 — Frontend Production Readiness
+
+### UX Improvements
+- [ ] Skeleton loaders thay loading spinner cho tất cả list views
+- [ ] Empty state components (hiển thị khi list trống, kèm nút action)
+- [ ] Breadcrumb navigation (Resume List → Resume Detail → ...)
+- [ ] Global error boundary component
+
+### Auth Flow (Mock)
+- [ ] `core/guards/auth.guard.ts`: kiểm tra `X-User-Id` trong localStorage → nếu thiếu, redirect `/login`
+- [ ] `pages/login/`: form nhập User ID (demo/mock — thực tế nhận token từ API Gateway)
+
+### Docker
+- [ ] `intelli-hire-frontend/Dockerfile`: multi-stage build
+  ```
+  Stage 1 (build): node:20-alpine → npm ci → ng build --configuration=production
+  Stage 2 (serve): nginx:alpine → copy dist → EXPOSE 80
+  ```
+- [ ] `intelli-hire-frontend/nginx.conf`: cấu hình SPA routing (`try_files $uri /index.html`)
+- [ ] Cập nhật `docker-compose.yml`: thêm service `frontend` (port 80, `depends_on: resume-service`)
+
+### Testing
+- [ ] Unit tests (Karma/Jest):
+  - `auth.interceptor.spec.ts`
+  - `resume.service.spec.ts`
+  - `resume-list.component.spec.ts`
+- [ ] E2E (Playwright hoặc Cypress):
+  - Test case 1: Upload CV → ParseJob polling → status COMPLETED
+  - Test case 2: Tạo Resume → thêm Experience → xóa Experience
+  - Test case 3: Generate Skill Profile → seniority hiển thị đúng
+
+### Verification STEP 13
+- [ ] `ng build --configuration=production` → thành công, bundle size < 2MB
+- [ ] `docker-compose up --build` → container frontend healthy ở port 80
+- [ ] Truy cập app không có localStorage `X-User-Id` → redirect `/login`
+- [ ] E2E tests: cả 3 test cases pass
+- [ ] Test coverage frontend ≥ 50%: `ng test --code-coverage`
+
+---
+
 ## Tổng Kết
 
 | Metric | Target | Kết Quả |
 |--------|--------|---------|
-| Endpoints | 32 | — |
-| Test coverage | ≥ 60% | — |
+| Endpoints (backend) | 32 | — |
+| Test coverage (backend) | ≥ 60% | — |
 | Concurrent uploads | 50 | — |
 | Parse time P95 | < 10s | — |
 | Response time (DB) | < 500ms | — |
+| Angular version | 17+ (standalone) | — |
+| UI Framework | Angular Material | — |
+| State management | Services + BehaviorSubject | — |
+| Bundle size (prod) | < 2MB | — |
+| Test coverage (frontend) | ≥ 50% | — |
+| E2E test cases | ≥ 3 | — |
