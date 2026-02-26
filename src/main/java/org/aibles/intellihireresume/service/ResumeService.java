@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface ResumeService {
     
-    ResumeResponse create(CreateResumeRequest request);
+    ResumeResponse create(String userId, CreateResumeRequest request);
     
     ResumeResponse getById(String id);
     

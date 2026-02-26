@@ -16,7 +16,8 @@ public enum ErrorCode {
     // Common errors
     COM_001("COM_001", "Validation error"),
     COM_002("COM_002", "Internal server error"),
-    COM_003("COM_003", "Bad request");
+    COM_003("COM_003", "Bad request"),
+    COM_004("COM_004", "Missing required header");
 
     private final String code;
     private final String message;

@@ -29,6 +29,7 @@ CREATE TABLE resumes (
     title VARCHAR(255),
     status VARCHAR(20) NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT true,
+    raw_text TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by VARCHAR(36) NOT NULL DEFAULT 'system',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
