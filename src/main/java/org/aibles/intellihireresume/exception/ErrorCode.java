@@ -17,7 +17,12 @@ public enum ErrorCode {
     COM_001("COM_001", "Validation error"),
     COM_002("COM_002", "Internal server error"),
     COM_003("COM_003", "Bad request"),
-    COM_004("COM_004", "Missing required header");
+    COM_004("COM_004", "Missing required header"),
+
+    // Parse job errors
+    JOB_001("JOB_001", "Parse job not found"),
+    JOB_002("JOB_002", "Cannot cancel job in current status"),
+    JOB_003("JOB_003", "Job already running for this resume");
 
     private final String code;
     private final String message;

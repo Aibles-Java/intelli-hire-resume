@@ -10,7 +10,7 @@
 | Step | Nội Dung | Trạng Thái |
 |------|----------|-----------|
 | STEP 0 | Pre-work (fix base code) | ✅ Hoàn thành |
-| STEP 1 | ParseJob Service + Controller | ⬜ Chưa bắt đầu |
+| STEP 1 | ParseJob Service + Controller | ✅ Hoàn thành |
 | STEP 2 | File Management (MinIO + Redis) | ⬜ Chưa bắt đầu |
 | STEP 3 | Contact Management | ⬜ Chưa bắt đầu |
 | STEP 4 | Experience Management | ⬜ Chưa bắt đầu |
@@ -76,41 +76,41 @@
 > Tracking trạng thái xử lý CV bất đồng bộ.
 
 ### Repository
-- [ ] `repository/ResumeParseJobRepository.java`: thêm `findByResumeId(String resumeId)`
-- [ ] `repository/ResumeParseJobRepository.java`: thêm `findByStatus(JobStatus status)`
+- [x] `repository/ResumeParseJobRepository.java`: thêm `findByResumeId(String resumeId)`
+- [x] `repository/ResumeParseJobRepository.java`: thêm `findByStatus(JobStatus status)`
 
 ### DTOs
-- [ ] Kiểm tra / tạo `dto/ParseJobRequest.java` — fields: `resumeId`, `jobType`
-- [ ] Kiểm tra / tạo `dto/ParseJobResponse.java` — fields: `id`, `resumeId`, `status`, `jobType`, `progress`, `retryCount`, `errorMessage`, `startedAt`, `finishedAt`
+- [x] Kiểm tra / tạo `dto/ParseJobRequest.java` — fields: `resumeId`, `jobType`
+- [x] Kiểm tra / tạo `dto/ParseJobResponse.java` — fields: `id`, `resumeId`, `status`, `jobType`, `progress`, `retryCount`, `errorMessage`, `startedAt`, `finishedAt`
 
 ### Mapper
-- [ ] Kiểm tra / tạo `mapper/ParseJobMapper.java` — methods: `toEntity`, `toResponse`
+- [x] Kiểm tra / tạo `mapper/ParseJobMapper.java` — methods: `toEntity`, `toResponse`
 
 ### Service
-- [ ] `service/ResumeParseJobService.java`: định nghĩa interface với 4 methods:
+- [x] `service/ResumeParseJobService.java`: định nghĩa interface với 4 methods:
   - `create(String resumeId, JobType jobType)` → `ParseJobResponse`
   - `getById(String id)` → `ParseJobResponse`
   - `cancel(String id)` → `ParseJobResponse`
   - `updateStatus(String id, JobStatus status)` → void
-- [ ] `service/impl/ResumeParseJobServiceImpl.java`: implement 4 methods trên
+- [x] `service/impl/ResumeParseJobServiceImpl.java`: implement 4 methods trên
   - `create`: check resume tồn tại → check không có job RUNNING → tạo job với status `QUEUED`
   - `cancel`: chỉ cancel khi status là `QUEUED` hoặc `RUNNING` → throw JOB_002 nếu không hợp lệ
   - `updateStatus`: internal method dùng bởi processing pipeline
 
 ### Error Codes
-- [ ] `exception/ErrorCode.java`: thêm `JOB_001` (Job not found)
-- [ ] `exception/ErrorCode.java`: thêm `JOB_002` (Cannot cancel job in current status)
-- [ ] `exception/ErrorCode.java`: thêm `JOB_003` (Job already running)
+- [x] `exception/ErrorCode.java`: thêm `JOB_001` (Job not found)
+- [x] `exception/ErrorCode.java`: thêm `JOB_002` (Cannot cancel job in current status)
+- [x] `exception/ErrorCode.java`: thêm `JOB_003` (Job already running)
 
 ### Controller
-- [ ] `controller/ResumeParseJobController.java`: implement 3 endpoints
+- [x] `controller/ResumeParseJobController.java`: implement 3 endpoints
   - `POST /api/v1/parse-jobs` → 201 Created
   - `GET /api/v1/parse-jobs/{id}` → 200 OK
   - `PUT /api/v1/parse-jobs/{id}/cancel` → 200 OK
 
 ### Tests
-- [ ] `test/service/impl/ResumeParseJobServiceImplTest.java` — unit tests
-- [ ] `test/controller/ResumeParseJobControllerTest.java` — MockMvc tests
+- [x] `test/service/impl/ResumeParseJobServiceImplTest.java` — unit tests (10 cases)
+- [x] `test/controller/ResumeParseJobControllerTest.java` — MockMvc tests (8 cases)
 
 ### Verification STEP 1
 - [ ] `mvn test` — tất cả tests pass
