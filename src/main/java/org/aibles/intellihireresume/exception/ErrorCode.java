@@ -22,7 +22,13 @@ public enum ErrorCode {
     // Parse job errors
     JOB_001("JOB_001", "Parse job not found"),
     JOB_002("JOB_002", "Cannot cancel job in current status"),
-    JOB_003("JOB_003", "Job already running for this resume");
+    JOB_003("JOB_003", "Job already running for this resume"),
+
+    // File errors
+    FILE_001("FILE_001", "File not found"),
+    FILE_002("FILE_002", "Invalid file type, only PDF and DOCX are allowed"),
+    FILE_003("FILE_003", "File size exceeds 5MB limit"),
+    FILE_004("FILE_004", "File already exists for this resume");
 
     private final String code;
     private final String message;
