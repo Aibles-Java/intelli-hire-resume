@@ -60,8 +60,7 @@ public class MinioConfig {
                     log.info("MinIO bucket already exists: {}", bucketName);
                 }
             } catch (Exception e) {
-                log.error("Failed to initialize MinIO bucket: {}", bucketName, e);
-                throw new RuntimeException("MinIO bucket initialization failed: " + e.getMessage(), e);
+                log.warn("MinIO bucket initialization failed for bucket '{}'. File operations will be unavailable: {}", bucketName, e.getMessage());
             }
         }
     }
