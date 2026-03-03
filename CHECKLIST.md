@@ -12,7 +12,7 @@
 | STEP 0 | Pre-work (fix base code) | ✅ Hoàn thành |
 | STEP 1 | ParseJob Service + Controller | ✅ Hoàn thành |
 | STEP 2 | File Management (MinIO + Redis) | ✅ Hoàn thành |
-| STEP 3 | Contact Management | ⬜ Chưa bắt đầu |
+| STEP 3 | Contact Management | ✅ Hoàn thành |
 | STEP 4 | Experience Management | ⬜ Chưa bắt đầu |
 | STEP 5 | Education Management | ⬜ Chưa bắt đầu |
 | STEP 6 | Skills (Catalog + CRUD + Profile) | ⬜ Chưa bắt đầu |
@@ -194,36 +194,36 @@
 > Thông tin liên lạc trích xuất từ CV — pipeline write + manual edit.
 
 ### DTOs
-- [ ] `dto/ResumeContactRequest.java` — fields: `fullName`, `email`, `phone`, `location`, `linkedinUrl`, `otherInfo`
+- [x] `dto/ResumeContactRequest.java` — fields: `fullName`, `email`, `phone`, `location`, `linkedinUrl`, `otherInfo`
   - Validation: `@Email` trên email, regex trên phone, `@Pattern` trên linkedinUrl
-- [ ] `dto/ResumeContactResponse.java` — tất cả fields + audit (`createdAt`, `updatedAt`)
+- [x] `dto/ResumeContactResponse.java` — tất cả fields + audit (`createdAt`, `updatedAt`)
 
 ### Mapper
-- [ ] `mapper/ResumeContactMapper.java` — `toEntity`, `toResponse`
+- [x] `mapper/ResumeContactMapper.java` — `toEntity`, `toResponse`
 
 ### Repository
-- [ ] `repository/ResumeContactRepository.java`: thêm `findByResumeId(String resumeId)`
+- [x] `repository/ResumeContactRepository.java`: thêm `findByResumeId(String resumeId)`
 
 ### Service
-- [ ] `service/ResumeContactService.java`: interface
+- [x] `service/ResumeContactService.java`: interface
   - `getByResumeId(String resumeId)` → `ResumeContactResponse`
   - `createOrUpdate(String resumeId, ResumeContactRequest request)` → `ResumeContactResponse`
-- [ ] `service/impl/ResumeContactServiceImpl.java`:
+- [x] `service/impl/ResumeContactServiceImpl.java`:
   - Validate resume tồn tại trước (throw RES_001 nếu không có)
   - Nếu contact chưa có → INSERT; nếu đã có → UPDATE (upsert)
 
 ### Error Codes
-- [ ] `exception/ErrorCode.java`: thêm `CONTACT_001` (Contact not found)
-- [ ] `exception/ErrorCode.java`: thêm `CONTACT_002` (Invalid contact data)
+- [x] `exception/ErrorCode.java`: thêm `CONTACT_001` (Contact not found)
+- [x] `exception/ErrorCode.java`: thêm `CONTACT_002` (Invalid contact data)
 
 ### Controller
-- [ ] `controller/ResumeContactController.java`: implement 2 endpoints
+- [x] `controller/ResumeContactController.java`: implement 2 endpoints
   - `GET /api/v1/resumes/{resumeId}/contact` → 200 OK
   - `PUT /api/v1/resumes/{resumeId}/contact` → 200 OK (upsert)
 
 ### Tests
-- [ ] `test/service/impl/ResumeContactServiceImplTest.java`
-- [ ] `test/controller/ResumeContactControllerTest.java`
+- [x] `test/service/impl/ResumeContactServiceImplTest.java`
+- [x] `test/controller/ResumeContactControllerTest.java`
 
 ### Verification STEP 3
 - [ ] `mvn test` — pass
