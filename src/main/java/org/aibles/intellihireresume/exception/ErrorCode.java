@@ -28,7 +28,11 @@ public enum ErrorCode {
     FILE_001("FILE_001", "File not found"),
     FILE_002("FILE_002", "Invalid file type, only PDF and DOCX are allowed"),
     FILE_003("FILE_003", "File size exceeds 5MB limit"),
-    FILE_004("FILE_004", "File already exists for this resume");
+    FILE_004("FILE_004", "File already exists for this resume"),
+
+    // Contact errors
+    CONTACT_001("CONTACT_001", "Contact not found"),
+    CONTACT_002("CONTACT_002", "Invalid contact data");
 
     private final String code;
     private final String message;
