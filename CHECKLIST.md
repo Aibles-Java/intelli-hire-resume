@@ -11,7 +11,7 @@
 |------|----------|-----------|
 | STEP 0 | Pre-work (fix base code) | ✅ Hoàn thành |
 | STEP 1 | ParseJob Service + Controller | ✅ Hoàn thành |
-| STEP 2 | File Management (MinIO + Redis) | ⬜ Chưa bắt đầu |
+| STEP 2 | File Management (MinIO + Redis) | ✅ Hoàn thành |
 | STEP 3 | Contact Management | ⬜ Chưa bắt đầu |
 | STEP 4 | Experience Management | ⬜ Chưa bắt đầu |
 | STEP 5 | Education Management | ⬜ Chưa bắt đầu |
@@ -125,59 +125,59 @@
 > Upload/download CV + enqueue async parse job.
 
 ### Dependencies
-- [ ] `pom.xml`: thêm dependency `io.minio:minio:8.5.7`
-- [ ] `pom.xml`: thêm dependency `spring-boot-starter-data-redis`
+- [x] `pom.xml`: thêm dependency `io.minio:minio:8.5.7`
+- [x] `pom.xml`: thêm dependency `spring-boot-starter-data-redis`
 
 ### Config
-- [ ] `application.yml`: thêm MinIO config (`endpoint`, `access-key`, `secret-key`, `bucket-name`)
-- [ ] `application.yml`: thêm Redis config (`host`, `port`)
-- [ ] `application.yml`: thêm multipart config (`max-file-size: 5MB`, `max-request-size: 5MB`)
-- [ ] `application.yml`: thêm `worker.pool-size: ${WORKER_POOL_SIZE:10}`
+- [x] `application.yml`: thêm MinIO config (`endpoint`, `access-key`, `secret-key`, `bucket-name`)
+- [x] `application.yml`: thêm Redis config (`host`, `port`)
+- [x] `application.yml`: thêm multipart config (`max-file-size: 5MB`, `max-request-size: 5MB`)
+- [x] `application.yml`: thêm `worker.pool-size: ${WORKER_POOL_SIZE:10}`
 
 ### Config Classes
-- [ ] `config/MinioConfig.java`: tạo `MinioClient` bean
-- [ ] `config/RedisConfig.java`: tạo `RedisTemplate<String, String>` bean với StringSerializer
+- [x] `config/MinioConfig.java`: tạo `MinioClient` bean
+- [x] `config/RedisConfig.java`: tạo `RedisTemplate<String, String>` bean với StringSerializer
 
 ### Storage Service
-- [ ] `service/FileStorageService.java`: interface với 3 methods (`upload`, `download`, `delete`)
-- [ ] `service/impl/MinioFileStorageServiceImpl.java`: implement MinIO upload/download/delete
+- [x] `service/FileStorageService.java`: interface với 3 methods (`upload`, `download`, `delete`)
+- [x] `service/impl/MinioFileStorageServiceImpl.java`: implement MinIO upload/download/delete
 
 ### Redis Queue Service
-- [ ] `service/RedisJobQueueService.java`: implement
+- [x] `service/RedisJobQueueService.java`: implement
   - `enqueue(String resumeId)` → `LPUSH resume:parse:queue resumeId`
   - `dequeue()` → `RPOP resume:parse:queue`
 
 ### DTOs & Mapper
-- [ ] `dto/ResumeFileResponse.java` — fields: `id`, `resumeId`, `originalName`, `fileType`, `fileSizeBytes`, `objectKey`, `createdAt`
-- [ ] `mapper/ResumeFileMapper.java` — `toResponse(ResumeFile)`
+- [x] `dto/ResumeFileResponse.java` — fields: `id`, `resumeId`, `originalName`, `fileType`, `fileSizeBytes`, `objectKey`, `createdAt`
+- [x] `mapper/ResumeFileMapper.java` — `toResponse(ResumeFile)`
 
 ### Repository
-- [ ] `repository/ResumeFileRepository.java`: thêm `findByResumeId(String resumeId)`
+- [x] `repository/ResumeFileRepository.java`: thêm `findByResumeId(String resumeId)`
 
 ### Service
-- [ ] `service/ResumeFileService.java`: interface với 4 methods
-- [ ] `service/impl/ResumeFileServiceImpl.java`: implement
+- [x] `service/ResumeFileService.java`: interface với 4 methods
+- [x] `service/impl/ResumeFileServiceImpl.java`: implement
   - `upload`: validate MIME type (PDF/DOCX) → validate size ≤5MB → upload MinIO → lưu DB → `enqueue(resumeId)` vào Redis → update resume status = `UPLOADED`
   - `getByResumeId`: tìm theo resumeId → throw FILE_001 nếu không có
   - `download`: lấy objectKey từ DB → download từ MinIO → trả về `Resource`
   - `delete`: xóa file trên MinIO → xóa record DB
 
 ### Error Codes
-- [ ] `exception/ErrorCode.java`: thêm `FILE_001` (File not found)
-- [ ] `exception/ErrorCode.java`: thêm `FILE_002` (Invalid file type — chỉ PDF/DOCX)
-- [ ] `exception/ErrorCode.java`: thêm `FILE_003` (File size exceeded 5MB)
-- [ ] `exception/ErrorCode.java`: thêm `FILE_004` (File already exists for this resume)
+- [x] `exception/ErrorCode.java`: thêm `FILE_001` (File not found)
+- [x] `exception/ErrorCode.java`: thêm `FILE_002` (Invalid file type — chỉ PDF/DOCX)
+- [x] `exception/ErrorCode.java`: thêm `FILE_003` (File size exceeded 5MB)
+- [x] `exception/ErrorCode.java`: thêm `FILE_004` (File already exists for this resume)
 
 ### Controller
-- [ ] `controller/ResumeFileController.java`: đọc `X-User-Id` header, implement 4 endpoints
+- [x] `controller/ResumeFileController.java`: đọc `X-User-Id` header, implement 4 endpoints
   - `POST /api/v1/resumes/{resumeId}/files` → 201 Created
   - `GET /api/v1/resumes/{resumeId}/files` → 200 OK
   - `GET /api/v1/resumes/{resumeId}/files/download` → ResponseEntity<Resource>
   - `DELETE /api/v1/resumes/{resumeId}/files` → 200 OK
 
 ### Tests
-- [ ] `test/service/impl/ResumeFileServiceImplTest.java`
-- [ ] `test/controller/ResumeFileControllerTest.java`
+- [x] `test/service/impl/ResumeFileServiceImplTest.java`
+- [x] `test/controller/ResumeFileControllerTest.java`
 
 ### Verification STEP 2
 - [ ] `mvn test` — tất cả tests pass
