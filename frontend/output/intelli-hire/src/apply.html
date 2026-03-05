@@ -342,12 +342,13 @@
       <!-- ============================================ -->
       <!-- STEP 1: UPLOAD RESUME                        -->
       <!-- ============================================ -->
-      <section class="mb-12 anim-up anim-up-3">
+      <section id="step1" class="mb-12 anim-up anim-up-3">
         <h2 class="font-display font-semibold text-xl mb-2">Upload Your Resume</h2>
         <p class="text-text-secondary text-sm mb-6">Our AI will parse your resume and auto-fill your details</p>
 
         <!-- Drag-drop zone -->
-        <div class="drop-zone p-10 text-center mb-6">
+        <div id="ix-drop-zone" class="drop-zone p-10 text-center mb-6">
+          <input type="file" id="ix-file-input" accept=".pdf,.docx" style="display:none">
           <div class="flex flex-col items-center gap-4">
             <!-- Upload icon -->
             <div class="text-accent">
@@ -359,7 +360,7 @@
             <div>
               <p class="text-text-primary font-medium mb-1">Drag &amp; drop your resume here</p>
               <p class="text-text-tertiary text-sm mb-4">or</p>
-              <button class="btn-ghost !py-2.5 !px-5 !text-sm">
+              <button id="ix-browse-btn" class="btn-ghost !py-2.5 !px-5 !text-sm">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 10v3a1 1 0 001 1h10a1 1 0 001-1v-3M11 5L8 2M8 2L5 5M8 2v8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 Browse Files
               </button>
@@ -445,8 +446,8 @@
           </div>
 
           <!-- Continue button -->
-          <button class="btn-glow w-full mt-2">
-            Continue
+          <button id="btn-s1-continue" class="btn-glow w-full mt-2">
+            Continue to Your Details
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
         </div>
@@ -455,7 +456,7 @@
       <!-- ============================================ -->
       <!-- STEP 2: YOUR DETAILS                         -->
       <!-- ============================================ -->
-      <section class="mb-12 anim-up anim-up-4">
+      <section id="step2" class="mb-12 anim-up anim-up-4">
         <h2 class="font-display font-semibold text-xl mb-2">Confirm Your Details</h2>
         <p class="text-text-secondary text-sm mb-6">We auto-filled these from your resume. Please verify.</p>
 
@@ -535,12 +536,12 @@
 
         <!-- Buttons -->
         <div class="flex items-center gap-3 mt-6">
-          <button class="btn-ghost flex-1">
+          <button id="btn-s2-back" class="btn-ghost flex-1">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M3 8L7 4M3 8L7 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Back
           </button>
-          <button class="btn-glow flex-1">
-            Continue
+          <button id="btn-s2-continue" class="btn-glow flex-1">
+            Review Application
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
         </div>
@@ -549,7 +550,7 @@
       <!-- ============================================ -->
       <!-- STEP 3: REVIEW & SUBMIT                      -->
       <!-- ============================================ -->
-      <section class="mb-12 anim-up anim-up-5">
+      <section id="step3" class="mb-12 anim-up anim-up-5">
         <h2 class="font-display font-semibold text-xl mb-2">Review Your Application</h2>
         <p class="text-text-secondary text-sm mb-6">Make sure everything looks good before submitting.</p>
 
@@ -654,11 +655,11 @@
 
         <!-- Buttons -->
         <div class="flex items-center gap-3">
-          <button class="btn-ghost flex-1">
+          <button id="btn-s3-back" class="btn-ghost flex-1">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M3 8L7 4M3 8L7 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Back
           </button>
-          <button class="btn-glow flex-[2]">
+          <button id="btn-s3-submit" class="btn-glow flex-[2]">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8l4.5 4.5L14 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Submit Application
           </button>
@@ -668,7 +669,7 @@
       <!-- ============================================ -->
       <!-- STEP 4: CONFIRMATION                         -->
       <!-- ============================================ -->
-      <section class="anim-up anim-up-6">
+      <section id="step-success" class="anim-up anim-up-6">
         <!-- Divider -->
         <div class="border-t border-[rgba(255,255,255,0.06)] mb-12"></div>
 
@@ -770,6 +771,182 @@
       </div>
     </div>
   </footer>
+
+  <!-- ============================================ -->
+  <!-- PRO-MAX APPLY SCRIPT                         -->
+  <!-- ============================================ -->
+  <script>
+    // ============ MULTI-STEP FORM ============
+    const steps = ['step1', 'step2', 'step3', 'step-success'];
+    let currentStep = 0;
+
+    // Progress step DOM refs
+    const progSteps = document.querySelectorAll('.flex.items-center.justify-between .flex.flex-col.items-center');
+    const progLine  = document.querySelector('.absolute.top-4.left-\\[calc\\(16\\.67\\%\\)\\].w-\\[calc\\(33\\.33\\%\\)\\]');
+
+    function showStep(idx, direction = 1) {
+      const prev = document.getElementById(steps[currentStep]);
+      const next = document.getElementById(steps[idx]);
+      if (!prev || !next) return;
+
+      // Animate out previous step
+      prev.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      prev.style.opacity = '0';
+      prev.style.transform = `translateX(${direction > 0 ? '-30px' : '30px'})`;
+
+      setTimeout(() => {
+        prev.style.display = 'none';
+        prev.style.opacity = '';
+        prev.style.transform = '';
+
+        // Animate in next step
+        next.style.display = 'block';
+        next.style.opacity = '0';
+        next.style.transform = `translateX(${direction > 0 ? '30px' : '-30px'})`;
+        next.style.transition = 'none';
+
+        requestAnimationFrame(() => {
+          next.style.transition = 'opacity 0.4s cubic-bezier(0.16,1,0.3,1), transform 0.4s cubic-bezier(0.16,1,0.3,1)';
+          next.style.opacity = '1';
+          next.style.transform = 'translateX(0)';
+        });
+
+        currentStep = idx;
+        updateProgressBar(idx);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 280);
+    }
+
+    function updateProgressBar(stepIdx) {
+      // Update progress line width
+      const widths = ['0%', '50%', '100%', '100%'];
+      if (progLine) progLine.style.width = widths[stepIdx] || '0%';
+
+      // Update step circles
+      progSteps.forEach((stepEl, i) => {
+        const circle = stepEl.querySelector('.w-8.h-8');
+        const label  = stepEl.querySelector('span');
+        if (!circle || !label) return;
+
+        if (i < stepIdx) {
+          // Completed
+          circle.style.background = '#00E68A';
+          circle.style.color = '#0A0A0F';
+          circle.textContent = '✓';
+          label.style.color = '#00E68A';
+        } else if (i === stepIdx) {
+          // Active
+          circle.style.background = '#00F0FF';
+          circle.style.color = '#0A0A0F';
+          circle.textContent = i + 1;
+          label.style.color = '#00F0FF';
+          label.style.fontWeight = '700';
+        } else {
+          // Upcoming
+          circle.style.background = 'rgba(255,255,255,0.06)';
+          circle.style.color = '#5A5E72';
+          circle.textContent = i + 1;
+          label.style.color = '#5A5E72';
+          label.style.fontWeight = '500';
+        }
+      });
+    }
+
+    // Hide steps 2, 3, 4 initially
+    ['step2', 'step3', 'step-success'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+
+    // Wire up buttons
+    document.getElementById('btn-s1-continue')?.addEventListener('click', () => showStep(1, 1));
+    document.getElementById('btn-s2-back')?.addEventListener('click', () => showStep(0, -1));
+    document.getElementById('btn-s2-continue')?.addEventListener('click', () => showStep(2, 1));
+    document.getElementById('btn-s3-back')?.addEventListener('click', () => showStep(1, -1));
+
+    // Submit with loading animation
+    document.getElementById('btn-s3-submit')?.addEventListener('click', function() {
+      const btn = this;
+      btn.disabled = true;
+      btn.innerHTML = `<div class="w-4 h-4 rounded-full border-2 border-[#0A0A0F] border-t-transparent animate-spin"></div> Submitting...`;
+      setTimeout(() => {
+        btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8l4.5 4.5L14 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Submitted!`;
+        setTimeout(() => showStep(3, 1), 600);
+      }, 2000);
+    });
+
+    // ============ DRAG & DROP UPLOAD ============
+    const dropZone  = document.getElementById('ix-drop-zone');
+    const fileInput = document.getElementById('ix-file-input');
+    const browseBtn = document.getElementById('ix-browse-btn');
+
+    browseBtn?.addEventListener('click', () => fileInput?.click());
+    fileInput?.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+    if (dropZone) {
+      ['dragenter', 'dragover'].forEach(ev => {
+        dropZone.addEventListener(ev, (e) => {
+          e.preventDefault();
+          dropZone.style.borderColor = '#00F0FF';
+          dropZone.style.background = 'rgba(0,240,255,0.05)';
+          dropZone.style.borderStyle = 'solid';
+        });
+      });
+      ['dragleave', 'drop'].forEach(ev => {
+        dropZone.addEventListener(ev, (e) => {
+          e.preventDefault();
+          dropZone.style.borderColor = '';
+          dropZone.style.background = '';
+          dropZone.style.borderStyle = '';
+          if (ev === 'drop') {
+            const file = e.dataTransfer?.files?.[0];
+            if (file) handleFile(file);
+          }
+        });
+      });
+    }
+
+    function handleFile(file) {
+      if (!file) return;
+      const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      const maxSize = 5 * 1024 * 1024; // 5MB
+
+      if (!allowedTypes.includes(file.type) && !file.name.match(/\.(pdf|docx)$/i)) {
+        showApplyToast('Please upload a PDF or DOCX file', 'danger');
+        return;
+      }
+      if (file.size > maxSize) {
+        showApplyToast('File must be under 5MB', 'danger');
+        return;
+      }
+
+      // Update the file card with real file name/size
+      const fileCards = document.querySelectorAll('#step1 .bg-bg-card .text-sm.font-medium.truncate');
+      fileCards.forEach(el => { if (el) el.textContent = file.name; });
+      const sizeEls = document.querySelectorAll('#step1 .bg-bg-card .text-xs.text-text-tertiary');
+      sizeEls.forEach(el => { if (el) el.textContent = (file.size / 1024).toFixed(0) + ' KB'; });
+
+      // Hide drop zone, show upload state
+      if (dropZone) dropZone.style.display = 'none';
+      showApplyToast(`"${file.name}" uploaded successfully`, 'success');
+    }
+
+    // ============ MINI TOAST FOR APPLY PAGE ============
+    function showApplyToast(msg, type = 'info') {
+      const c = { success: '#00E68A', danger: '#FF3D71', info: '#00F0FF' };
+      const t = document.createElement('div');
+      t.style.cssText = `position:fixed;top:80px;right:20px;z-index:9999;background:#16161F;border-left:3px solid ${c[type]||c.info};color:#EEF0F6;padding:12px 16px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,0.5);max-width:280px;animation:toastIn 0.3s ease both`;
+      t.textContent = msg;
+      if (!document.getElementById('ix-apply-toast-css')) {
+        const s = document.createElement('style');
+        s.id = 'ix-apply-toast-css';
+        s.textContent = '@keyframes toastIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}';
+        document.head.appendChild(s);
+      }
+      document.body.appendChild(t);
+      setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(() => t.remove(), 320); }, 3200);
+    }
+  </script>
 
 </body>
 </html>

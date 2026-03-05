@@ -825,5 +825,64 @@
     </div><!-- /Two-column layout -->
   </main>
 
+  <script>
+    // ============ SIDEBAR TOGGLE ============
+    const cMenuToggle = document.getElementById('menuToggle');
+    const cSidebar    = document.getElementById('sidebar');
+    const cOverlay    = document.getElementById('sidebarOverlay');
+    if (cMenuToggle) {
+      cMenuToggle.addEventListener('click', () => { cSidebar.classList.toggle('open'); cOverlay.classList.toggle('open'); });
+      cOverlay?.addEventListener('click', () => { cSidebar.classList.remove('open'); cOverlay.classList.remove('open'); });
+    }
+
+    // ============ TOAST ============
+    function showToast(msg, type = 'info') {
+      const c = { success: '#00E68A', danger: '#FF3D71', info: '#00F0FF', warning: '#FFAA00' };
+      const ic = { success: '✓', danger: '✕', info: 'ℹ', warning: '⚠' };
+      const color = c[type] || c.info;
+      const t = document.createElement('div');
+      t.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;background:#16161F;border-left:3px solid ${color};color:#EEF0F6;padding:14px 18px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;box-shadow:0 8px 40px rgba(0,0,0,0.5);display:flex;align-items:center;gap:10px;max-width:320px;animation:cToastIn 0.4s cubic-bezier(0.16,1,0.3,1) both;cursor:pointer`;
+      t.innerHTML = `<span style="color:${color}">${ic[type]||ic.info}</span>${msg}`;
+      if (!document.getElementById('c-toast-css')) { const s=document.createElement('style'); s.id='c-toast-css'; s.textContent='@keyframes cToastIn{from{opacity:0;transform:translateY(12px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}'; document.head.appendChild(s); }
+      document.body.appendChild(t);
+      t.addEventListener('click', () => t.remove());
+      setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(() => t.remove(), 320); }, 4000);
+    }
+
+    // ============ ACTION BUTTON INTERACTIONS ============
+    document.querySelectorAll('button').forEach(btn => {
+      const text = btn.textContent?.trim();
+      if (!text) return;
+      if (text.includes('Schedule') || text.includes('Interview')) {
+        btn.addEventListener('click', () => showToast('Interview scheduled! Calendar invite sent.', 'success'));
+      } else if (text.includes('Advance') || text.includes('Move')) {
+        btn.addEventListener('click', () => showToast('Candidate moved to next stage.', 'success'));
+      } else if (text.includes('Reject') || text.includes('Decline')) {
+        btn.addEventListener('click', () => showToast('Candidate status updated.', 'warning'));
+      } else if (text.includes('Message') || text.includes('Email')) {
+        btn.addEventListener('click', () => showToast('Opening message composer...', 'info'));
+      }
+    });
+
+    // ============ CURSOR GLOW ============
+    const cCursor = document.createElement('div');
+    cCursor.style.cssText = 'position:fixed;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(0,240,255,0.03) 0%,transparent 70%);pointer-events:none;transform:translate(-50%,-50%);z-index:0;opacity:0;transition:opacity 0.5s;will-change:transform;';
+    document.body.appendChild(cCursor);
+    let cRaf = false;
+    document.addEventListener('mousemove', (e) => {
+      if (!cRaf) { cRaf=true; requestAnimationFrame(() => { cCursor.style.left=e.clientX+'px'; cCursor.style.top=e.clientY+'px'; cCursor.style.opacity='1'; cRaf=false; }); }
+    }, { passive: true });
+    document.addEventListener('mouseleave', () => cCursor.style.opacity = '0');
+
+    // ============ KEYBOARD SHORTCUT Cmd+K ============
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        const s = document.querySelector('input[type="text"]');
+        if (s) { s.focus(); s.select(); }
+      }
+    });
+  </script>
+
 </body>
 </html>

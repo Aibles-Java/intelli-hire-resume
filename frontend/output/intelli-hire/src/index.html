@@ -199,6 +199,11 @@
 
 <body class="noise-overlay antialiased overflow-x-hidden">
 
+  <!-- Scroll Progress Bar -->
+  <div id="ix-progress" style="position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#00F0FF,#0080FF);width:0%;z-index:200;pointer-events:none;transition:none;"></div>
+  <!-- Cursor Glow -->
+  <div id="ix-cursor" style="position:fixed;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(0,240,255,0.04) 0%,transparent 70%);pointer-events:none;transform:translate(-50%,-50%);z-index:0;opacity:0;transition:opacity 0.5s;will-change:transform;left:0;top:0;"></div>
+
   <!-- ============================================ -->
   <!-- NAV                                          -->
   <!-- ============================================ -->
@@ -224,13 +229,39 @@
       <!-- CTAs -->
       <div class="flex items-center gap-3">
         <a href="apply.html" class="hidden sm:inline-flex text-sm text-text-secondary hover:text-text-primary transition-colors font-medium">Apply Now</a>
-        <a href="dashboard.html" class="btn-glow !py-2 !px-5 !text-sm">
+        <a href="dashboard.html" class="hidden sm:inline-flex btn-glow !py-2 !px-5 !text-sm">
           Launch Dashboard
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
+        <!-- Mobile hamburger -->
+        <button id="ix-hamburger" class="sm:hidden p-2 rounded-lg hover:bg-[rgba(255,255,255,0.06)] transition-colors text-text-secondary" aria-label="Menu">
+          <svg id="ix-hamburger-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
       </div>
     </div>
   </nav>
+
+  <!-- Mobile Menu -->
+  <div id="ix-mobile-menu" style="display:none;" class="fixed inset-0 z-40 sm:hidden">
+    <div id="ix-menu-overlay" class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+    <div class="absolute top-16 left-0 right-0 bg-[#12121A] border-b border-[rgba(255,255,255,0.06)] shadow-2xl p-5">
+      <div class="space-y-1 mb-4">
+        <a href="#features" class="ix-menu-link flex items-center gap-3 px-4 py-3 rounded-xl text-text-secondary hover:text-accent hover:bg-[rgba(0,240,255,0.05)] transition-all font-medium text-sm">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>Features
+        </a>
+        <a href="#stats" class="ix-menu-link flex items-center gap-3 px-4 py-3 rounded-xl text-text-secondary hover:text-accent hover:bg-[rgba(0,240,255,0.05)] transition-all font-medium text-sm">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 16l4-5 4 3 6-7"/></svg>Results
+        </a>
+        <a href="#testimonials" class="ix-menu-link flex items-center gap-3 px-4 py-3 rounded-xl text-text-secondary hover:text-accent hover:bg-[rgba(0,240,255,0.05)] transition-all font-medium text-sm">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Reviews
+        </a>
+      </div>
+      <div class="border-t border-[rgba(255,255,255,0.06)] pt-4 flex flex-col gap-2">
+        <a href="apply.html" class="ix-menu-link flex items-center gap-3 px-4 py-3 rounded-xl text-text-secondary hover:text-text-primary hover:bg-[rgba(255,255,255,0.04)] transition-all font-medium text-sm">Apply Now</a>
+        <a href="dashboard.html" class="btn-glow justify-center">Launch Dashboard</a>
+      </div>
+    </div>
+  </div>
 
   <!-- ============================================ -->
   <!-- HERO                                         -->
@@ -248,7 +279,7 @@
 
       <!-- Headline -->
       <h1 class="anim-up anim-up-2 font-display font-extrabold text-4xl md:text-6xl lg:text-7xl leading-[1.08] tracking-tight mb-6 max-w-4xl mx-auto">
-        Hire the <span class="text-accent relative">right people
+        Hire the <span class="text-accent relative"><span id="ix-typed" style="display:inline-block;">right people</span>
           <span class="absolute -bottom-1 left-0 w-full h-[3px] bg-gradient-to-r from-accent to-transparent rounded-full"></span>
         </span><br>
         at the speed of AI
@@ -388,28 +419,28 @@
     <section id="stats" class="py-16 px-4 md:px-12">
       <div class="max-w-[1000px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
         <div class="anim-up anim-up-1">
-          <div class="font-display font-extrabold text-4xl md:text-5xl tracking-tight">12,400+</div>
+          <div class="font-display font-extrabold text-4xl md:text-5xl tracking-tight"><span class="ix-counter" data-target="12400" data-suffix="+">0</span></div>
           <div class="text-sm text-text-secondary mt-2">Resumes Processed</div>
           <div class="w-12 h-[3px] bg-[rgba(255,255,255,0.06)] rounded-full mx-auto mt-3 overflow-hidden">
             <div class="h-full bg-accent rounded-full" style="width:100%; animation: barGrow 1.5s ease-out both; animation-delay: 0.5s;"></div>
           </div>
         </div>
         <div class="anim-up anim-up-2">
-          <div class="font-display font-extrabold text-4xl md:text-5xl tracking-tight">98.5%</div>
+          <div class="font-display font-extrabold text-4xl md:text-5xl tracking-tight"><span class="ix-counter" data-target="98.5" data-suffix="%" data-decimals="1">0</span></div>
           <div class="text-sm text-text-secondary mt-2">Parsing Accuracy</div>
           <div class="w-12 h-[3px] bg-[rgba(255,255,255,0.06)] rounded-full mx-auto mt-3 overflow-hidden">
             <div class="h-full bg-accent rounded-full" style="width:100%; animation: barGrow 1.5s ease-out both; animation-delay: 0.7s;"></div>
           </div>
         </div>
         <div class="anim-up anim-up-3">
-          <div class="font-display font-extrabold text-4xl md:text-5xl tracking-tight">48%</div>
+          <div class="font-display font-extrabold text-4xl md:text-5xl tracking-tight"><span class="ix-counter" data-target="48" data-suffix="%">0</span></div>
           <div class="text-sm text-text-secondary mt-2">Faster Hiring</div>
           <div class="w-12 h-[3px] bg-[rgba(255,255,255,0.06)] rounded-full mx-auto mt-3 overflow-hidden">
             <div class="h-full bg-accent rounded-full" style="width:100%; animation: barGrow 1.5s ease-out both; animation-delay: 0.9s;"></div>
           </div>
         </div>
         <div class="anim-up anim-up-4">
-          <div class="font-display font-extrabold text-4xl md:text-5xl tracking-tight">320+</div>
+          <div class="font-display font-extrabold text-4xl md:text-5xl tracking-tight"><span class="ix-counter" data-target="320" data-suffix="+">0</span></div>
           <div class="text-sm text-text-secondary mt-2">Teams Trust Us</div>
           <div class="w-12 h-[3px] bg-[rgba(255,255,255,0.06)] rounded-full mx-auto mt-3 overflow-hidden">
             <div class="h-full bg-accent rounded-full" style="width:100%; animation: barGrow 1.5s ease-out both; animation-delay: 1.1s;"></div>
@@ -525,6 +556,142 @@
       </div>
     </div>
   </footer>
+
+
+  <!-- ============================================ -->
+  <!-- PRO-MAX INTERACTIVITY SCRIPT                 -->
+  <!-- ============================================ -->
+  <script>
+    // ============ SCROLL PROGRESS ============
+    const ixProg = document.getElementById('ix-progress');
+    window.addEventListener('scroll', () => {
+      const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight) * 100;
+      ixProg.style.width = Math.min(100, pct) + '%';
+    }, { passive: true });
+
+    // ============ CURSOR GLOW ============
+    const ixCursor = document.getElementById('ix-cursor');
+    let rafPending = false;
+    document.addEventListener('mousemove', (e) => {
+      if (!rafPending) {
+        rafPending = true;
+        requestAnimationFrame(() => {
+          ixCursor.style.left = e.clientX + 'px';
+          ixCursor.style.top = e.clientY + 'px';
+          ixCursor.style.opacity = '1';
+          rafPending = false;
+        });
+      }
+    }, { passive: true });
+    document.addEventListener('mouseleave', () => ixCursor.style.opacity = '0');
+
+    // ============ MOBILE MENU ============
+    const ixHamburger = document.getElementById('ix-hamburger');
+    const ixMobileMenu = document.getElementById('ix-mobile-menu');
+    const ixMenuOverlay = document.getElementById('ix-menu-overlay');
+    let menuOpen = false;
+
+    function toggleMenu(open) {
+      menuOpen = open !== undefined ? open : !menuOpen;
+      ixMobileMenu.style.display = menuOpen ? 'block' : 'none';
+      document.body.style.overflow = menuOpen ? 'hidden' : '';
+    }
+
+    ixHamburger.addEventListener('click', () => toggleMenu());
+    ixMenuOverlay.addEventListener('click', () => toggleMenu(false));
+    document.querySelectorAll('.ix-menu-link').forEach(link => {
+      link.addEventListener('click', () => toggleMenu(false));
+    });
+
+    // ============ COUNTER ANIMATION ============
+    function animateCounter(el) {
+      const target = parseFloat(el.dataset.target);
+      const suffix = el.dataset.suffix || '';
+      const decimals = parseInt(el.dataset.decimals || '0');
+      const duration = 2200;
+      const start = performance.now();
+      (function update(now) {
+        const t = Math.min(1, (now - start) / duration);
+        const ease = 1 - Math.pow(1 - t, 3);
+        const val = target * ease;
+        el.textContent = (decimals > 0
+          ? val.toFixed(decimals)
+          : target >= 1000 ? Math.floor(val).toLocaleString() : Math.floor(val)
+        ) + suffix;
+        if (t < 1) requestAnimationFrame(update);
+      })(start);
+    }
+
+    const counterObs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          animateCounter(entry.target);
+          counterObs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.4 });
+
+    document.querySelectorAll('.ix-counter').forEach(el => counterObs.observe(el));
+
+    // ============ WORD ROTATION (Hero) ============
+    const typedEl = document.getElementById('ix-typed');
+    if (typedEl) {
+      const words = ['right people', 'top talent', 'best candidates', 'perfect fits'];
+      let wordIdx = 0;
+      typedEl.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+      setInterval(() => {
+        wordIdx = (wordIdx + 1) % words.length;
+        typedEl.style.opacity = '0';
+        typedEl.style.transform = 'translateY(-8px)';
+        setTimeout(() => {
+          typedEl.textContent = words[wordIdx];
+          typedEl.style.opacity = '1';
+          typedEl.style.transform = 'translateY(0)';
+        }, 270);
+      }, 3400);
+    }
+
+    // ============ SCROLL REVEAL (below-fold) ============
+    const revealObs = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+          }, entry.target.dataset.delay || 0);
+          revealObs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+    // Apply reveal to feature cards and testimonials
+    document.querySelectorAll('#features .scan-card, #testimonials .bg-bg-card').forEach((el, i) => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+      el.style.transition = 'opacity 0.65s cubic-bezier(0.16,1,0.3,1), transform 0.65s cubic-bezier(0.16,1,0.3,1)';
+      el.dataset.delay = (i % 4) * 80;
+      revealObs.observe(el);
+    });
+
+    // ============ NAV SCROLL STYLE ============
+    const nav = document.querySelector('nav');
+    window.addEventListener('scroll', () => {
+      nav.style.borderBottomColor = window.scrollY > 10
+        ? 'rgba(0,240,255,0.08)'
+        : 'rgba(255,255,255,0.06)';
+    }, { passive: true });
+
+    // ============ SMOOTH SCROLL for anchor links ============
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+  </script>
 
 </body>
 </html>

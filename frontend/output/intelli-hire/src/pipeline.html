@@ -879,5 +879,84 @@
 
   </div><!-- end main-content -->
 
+  <!-- ============================================ -->
+  <!-- PRO-MAX PIPELINE SCRIPT                      -->
+  <!-- ============================================ -->
+  <script>
+    // ============ SIDEBAR TOGGLE ============
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar    = document.getElementById('sidebar');
+    const overlay    = document.getElementById('sidebarOverlay');
+
+    if (menuToggle) {
+      menuToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('open');
+      });
+      overlay?.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('open');
+      });
+    }
+
+    // ============ TOAST SYSTEM ============
+    function showToast(msg, type = 'info') {
+      const c = { success: '#00E68A', danger: '#FF3D71', info: '#00F0FF', warning: '#FFAA00' };
+      const ic = { success: '✓', danger: '✕', info: 'ℹ', warning: '⚠' };
+      const color = c[type] || c.info;
+      const toast = document.createElement('div');
+      toast.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;background:#16161F;border:1px solid ${color}22;border-left:3px solid ${color};color:#EEF0F6;padding:14px 18px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;box-shadow:0 8px 40px rgba(0,0,0,0.5);display:flex;align-items:center;gap:10px;max-width:320px;animation:pToastIn 0.4s cubic-bezier(0.16,1,0.3,1) both;cursor:pointer`;
+      toast.innerHTML = `<span style="color:${color};flex-shrink:0">${ic[type]||ic.info}</span>${msg}`;
+      if (!document.getElementById('p-toast-css')) {
+        const s = document.createElement('style');
+        s.id = 'p-toast-css';
+        s.textContent = '@keyframes pToastIn{from{opacity:0;transform:translateY(12px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}';
+        document.head.appendChild(s);
+      }
+      document.body.appendChild(toast);
+      toast.addEventListener('click', () => toast.remove());
+      setTimeout(() => { toast.style.opacity='0'; toast.style.transition='opacity 0.3s'; setTimeout(() => toast.remove(), 320); }, 4000);
+    }
+
+    // ============ KANBAN CARD INTERACTIONS ============
+    const kanbanCards = document.querySelectorAll('.kanban-card, a[href="candidate.html"]');
+    kanbanCards.forEach(card => {
+      card.addEventListener('click', (e) => {
+        // Don't intercept actual links
+        if (card.tagName === 'A') return;
+        e.preventDefault();
+        showToast('Opening candidate profile...', 'info');
+      });
+    });
+
+    // ============ COLUMN HEADER CLICK (add candidate) ============
+    document.querySelectorAll('.kanban-col-header button, button').forEach(btn => {
+      if (btn.textContent?.includes('+') || btn.querySelector('svg')) {
+        if (btn.closest('.kanban-board, [class*="kanban"]') || btn.parentElement?.querySelector('[class*="col"]')) {
+          btn.addEventListener('click', () => showToast('Adding new candidate...', 'info'));
+        }
+      }
+    });
+
+    // ============ CURSOR GLOW ============
+    const cursor = document.createElement('div');
+    cursor.style.cssText = 'position:fixed;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(0,240,255,0.03) 0%,transparent 70%);pointer-events:none;transform:translate(-50%,-50%);z-index:0;opacity:0;transition:opacity 0.5s;will-change:transform;left:0;top:0;';
+    document.body.appendChild(cursor);
+    let raf = false;
+    document.addEventListener('mousemove', (e) => {
+      if (!raf) { raf = true; requestAnimationFrame(() => { cursor.style.left=e.clientX+'px'; cursor.style.top=e.clientY+'px'; cursor.style.opacity='1'; raf=false; }); }
+    }, { passive: true });
+    document.addEventListener('mouseleave', () => cursor.style.opacity = '0');
+
+    // ============ KEYBOARD SHORTCUT ============
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        const s = document.querySelector('input[type="text"]');
+        if (s) { s.focus(); s.select(); }
+      }
+    });
+  </script>
+
 </body>
 </html>
