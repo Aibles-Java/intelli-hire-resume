@@ -559,5 +559,44 @@
 
   </main>
 
+  <script>
+    // ============ SCROLL REVEAL ============
+    const revObs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+          revObs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08 });
+
+    document.querySelectorAll('.anim-up').forEach((el, i) => {
+      // Only apply to elements below the fold
+      if (el.getBoundingClientRect().top > window.innerHeight) {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = `opacity 0.65s ${i * 0.05}s cubic-bezier(0.16,1,0.3,1), transform 0.65s ${i * 0.05}s cubic-bezier(0.16,1,0.3,1)`;
+        revObs.observe(el);
+      }
+    });
+
+    // ============ CURSOR GLOW ============
+    const tCursor = document.createElement('div');
+    tCursor.style.cssText = 'position:fixed;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(0,240,255,0.04) 0%,transparent 70%);pointer-events:none;transform:translate(-50%,-50%);z-index:0;opacity:0;transition:opacity 0.5s;will-change:transform;';
+    document.body.appendChild(tCursor);
+    let tRaf = false;
+    document.addEventListener('mousemove', (e) => {
+      if (!tRaf) { tRaf=true; requestAnimationFrame(() => { tCursor.style.left=e.clientX+'px'; tCursor.style.top=e.clientY+'px'; tCursor.style.opacity='1'; tRaf=false; }); }
+    }, { passive: true });
+    document.addEventListener('mouseleave', () => tCursor.style.opacity = '0');
+
+    // ============ NAV SCROLL ============
+    const tNav = document.querySelector('nav');
+    if (tNav) window.addEventListener('scroll', () => {
+      tNav.style.borderBottomColor = window.scrollY > 10 ? 'rgba(0,240,255,0.08)' : 'rgba(255,255,255,0.06)';
+    }, { passive: true });
+  </script>
+
 </body>
 </html>
