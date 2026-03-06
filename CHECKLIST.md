@@ -13,7 +13,7 @@
 | STEP 1 | ParseJob Service + Controller | ✅ Hoàn thành |
 | STEP 2 | File Management (MinIO + Redis) | ✅ Hoàn thành |
 | STEP 3 | Contact Management | ✅ Hoàn thành |
-| STEP 4 | Experience Management | ⬜ Chưa bắt đầu |
+| STEP 4 | Experience Management | ✅ Hoàn thành |
 | STEP 5 | Education Management | ⬜ Chưa bắt đầu |
 | STEP 6 | Skills (Catalog + CRUD + Profile) | ⬜ Chưa bắt đầu |
 | STEP 7 | Content Extraction Engine | ⬜ Chưa bắt đầu |
@@ -238,43 +238,43 @@
 > Kinh nghiệm làm việc — pipeline write + manual edit.
 
 ### DTOs
-- [ ] `dto/ResumeExperienceRequest.java` — fields: `company`, `title`, `startDate`, `endDate`, `description`, `isCurrent`
+- [x] `dto/ResumeExperienceRequest.java` — fields: `company`, `title`, `startDate`, `endDate`, `description`, `isCurrent`
   - Validation: `startDate ≤ endDate`; nếu `isCurrent=true` thì `endDate` phải null
-- [ ] `dto/ResumeExperienceResponse.java`
+- [x] `dto/ResumeExperienceResponse.java`
 
 ### Mapper
-- [ ] `mapper/ResumeExperienceMapper.java` — `toEntity`, `toResponse`, `toResponseList`
+- [x] `mapper/ResumeExperienceMapper.java` — `toEntity`, `toResponse`, `toResponseList`
 
 ### Repository
-- [ ] `repository/ResumeExperienceRepository.java`: thêm `findByResumeId(String resumeId)`
+- [x] `repository/ResumeExperienceRepository.java`: thêm `findByResumeId(String resumeId)`
 
 ### Service
-- [ ] `service/ResumeExperienceService.java`: interface (`list`, `create`, `update`, `delete`)
-- [ ] `service/impl/ResumeExperienceServiceImpl.java`:
+- [x] `service/ResumeExperienceService.java`: interface (`list`, `create`, `update`, `delete`)
+- [x] `service/impl/ResumeExperienceServiceImpl.java`:
   - Mọi method: validate resume tồn tại trước
   - `update`/`delete`: validate experience thuộc đúng resumeId
 
 ### Error Codes
-- [ ] `exception/ErrorCode.java`: thêm `EXP_001` (Experience not found)
-- [ ] `exception/ErrorCode.java`: thêm `EXP_002` (Invalid date range)
-- [ ] `exception/ErrorCode.java`: thêm `EXP_003` (Experience does not belong to resume)
+- [x] `exception/ErrorCode.java`: thêm `EXP_001` (Experience not found)
+- [x] `exception/ErrorCode.java`: thêm `EXP_002` (Invalid date range)
+- [x] `exception/ErrorCode.java`: thêm `EXP_003` (Experience does not belong to resume)
 
 ### Controller
-- [ ] `controller/ResumeExperienceController.java`: implement 4 endpoints
+- [x] `controller/ResumeExperienceController.java`: implement 4 endpoints
   - `GET /api/v1/resumes/{resumeId}/experiences` → 200 OK
   - `POST /api/v1/resumes/{resumeId}/experiences` → 201 Created
   - `PUT /api/v1/resumes/{resumeId}/experiences/{id}` → 200 OK
   - `DELETE /api/v1/resumes/{resumeId}/experiences/{id}` → 200 OK
 
 ### Tests
-- [ ] `test/service/impl/ResumeExperienceServiceImplTest.java`
-- [ ] `test/controller/ResumeExperienceControllerTest.java`
+- [x] `test/service/impl/ResumeExperienceServiceImplTest.java`
+- [x] `test/controller/ResumeExperienceControllerTest.java`
 
 ### Verification STEP 4
-- [ ] `mvn test` — pass
-- [ ] `POST` với `startDate > endDate` → 400 EXP_002
-- [ ] `POST` với `isCurrent=true` và `endDate` không null → 400
-- [ ] `DELETE` experience không thuộc resume → 404 EXP_003
+- [x] `mvn test` — pass
+- [x] `POST` với `startDate > endDate` → 400 EXP_002
+- [x] `POST` với `isCurrent=true` và `endDate` không null → 400
+- [x] `DELETE` experience không thuộc resume → 404 EXP_003
 
 ---
 
