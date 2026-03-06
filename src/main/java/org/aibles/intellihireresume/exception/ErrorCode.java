@@ -32,7 +32,12 @@ public enum ErrorCode {
 
     // Contact errors
     CONTACT_001("CONTACT_001", "Contact not found"),
-    CONTACT_002("CONTACT_002", "Invalid contact data");
+    CONTACT_002("CONTACT_002", "Invalid contact data"),
+
+    // Experience errors
+    EXP_001("EXP_001", "Experience not found"),
+    EXP_002("EXP_002", "Invalid date range"),
+    EXP_003("EXP_003", "Experience does not belong to resume");
 
     private final String code;
     private final String message;
