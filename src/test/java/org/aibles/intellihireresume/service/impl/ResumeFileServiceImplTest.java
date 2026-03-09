@@ -297,4 +297,102 @@ class ResumeFileServiceImplTest {
         verify(fileStorageService, never()).delete(any(), any());
         verify(resumeFileRepository, never()).delete(any(ResumeFile.class));
     }
+
+    @Test
+    void upload_ShouldReturnFileResponse_WhenValidDocxUploaded() throws IOException {
+        // Given
+        ResumeFile docxFile = new ResumeFile();
+        docxFile.setId(testFileId);
+        docxFile.setResumeId(testResumeId);
+        docxFile.setOriginalName("resume.docx");
+        docxFile.setFileType(FileType.DOCX);
+        docxFile.setFileSizeBytes(2048L);
+        docxFile.setObjectBucket(testBucketName);
+        docxFile.setObjectKey(testResumeId + "/some-uuid.docx");
+        docxFile.setCreatedBy(testUserId);
+
+        MultipartFile mockFile = mock(MultipartFile.class);
+        when(mockFile.getContentType()).thenReturn("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        when(mockFile.getSize()).thenReturn(2048L);
+        when(mockFile.getOriginalFilename()).thenReturn("resume.docx");
+        when(mockFile.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[2048]));
+
+        when(resumeRepository.findByIdActive(testResumeId)).thenReturn(Optional.of(testResume));
+        when(resumeFileRepository.findByResumeId(testResumeId)).thenReturn(Optional.empty());
+        when(fileStorageService.upload(anyString(), anyString(), any(InputStream.class), anyLong(), anyString()))
+                .thenReturn(testResumeId + "/some-uuid.docx");
+        when(resumeFileRepository.save(any(ResumeFile.class))).thenReturn(docxFile);
+
+        // When
+        ResumeFileResponse result = resumeFileService.upload(testResumeId, testUserId, mockFile);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getFileType()).isEqualTo(FileType.DOCX);
+        verify(redisJobQueueService).enqueue(testResumeId);
+    }
+
+    @Test
+    void upload_ShouldThrowBadRequestException_WhenFileSizeIsZero() {
+        // Given — isValidSize(0) returns false
+        MultipartFile mockFile = mock(MultipartFile.class);
+        when(mockFile.getContentType()).thenReturn("application/pdf");
+        when(mockFile.getSize()).thenReturn(0L);
+
+        when(resumeRepository.findByIdActive(testResumeId)).thenReturn(Optional.of(testResume));
+        when(resumeFileRepository.findByResumeId(testResumeId)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> resumeFileService.upload(testResumeId, testUserId, mockFile))
+                .isInstanceOf(BadRequestException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FILE_003.getCode());
+
+        verify(resumeFileRepository, never()).save(any());
+        verify(redisJobQueueService, never()).enqueue(any());
+    }
+
+    @Test
+    void upload_ShouldThrowBadRequestException_WhenMimeTypeIsNull() {
+        // Given — fromMimeType(null) returns null → FILE_002
+        MultipartFile mockFile = mock(MultipartFile.class);
+        when(mockFile.getContentType()).thenReturn(null);
+
+        when(resumeRepository.findByIdActive(testResumeId)).thenReturn(Optional.of(testResume));
+        when(resumeFileRepository.findByResumeId(testResumeId)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> resumeFileService.upload(testResumeId, testUserId, mockFile))
+                .isInstanceOf(BadRequestException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FILE_002.getCode());
+
+        verify(resumeFileRepository, never()).save(any());
+        verify(redisJobQueueService, never()).enqueue(any());
+    }
+
+    @Test
+    void download_ShouldThrowRuntimeException_WhenStorageThrowsException() {
+        // Given
+        when(resumeFileRepository.findByResumeId(testResumeId)).thenReturn(Optional.of(testResumeFile));
+        when(fileStorageService.download(testBucketName, testResumeFile.getObjectKey()))
+                .thenThrow(new RuntimeException("Storage connection failed"));
+
+        // When & Then
+        assertThatThrownBy(() -> resumeFileService.download(testResumeId))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Failed to download file");
+    }
+
+    @Test
+    void delete_ShouldThrowRuntimeException_WhenStorageDeleteFails() {
+        // Given
+        when(resumeFileRepository.findByResumeId(testResumeId)).thenReturn(Optional.of(testResumeFile));
+        doThrow(new RuntimeException("Storage error")).when(fileStorageService)
+                .delete(testBucketName, testResumeFile.getObjectKey());
+
+        // When & Then
+        assertThatThrownBy(() -> resumeFileService.delete(testResumeId))
+                .isInstanceOf(RuntimeException.class);
+
+        verify(resumeFileRepository, never()).delete(any(ResumeFile.class));
+    }
 }

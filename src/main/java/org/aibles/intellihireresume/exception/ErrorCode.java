@@ -37,7 +37,22 @@ public enum ErrorCode {
     // Experience errors
     EXP_001("EXP_001", "Experience not found"),
     EXP_002("EXP_002", "Invalid date range"),
-    EXP_003("EXP_003", "Experience does not belong to resume");
+    EXP_003("EXP_003", "Experience does not belong to resume"),
+
+    // Education errors
+    EDU_001("EDU_001", "Education not found"),
+    EDU_002("EDU_002", "Invalid year range"),
+    EDU_003("EDU_003", "Education does not belong to resume"),
+
+    // Skill catalog errors
+    SKILL_001("SKILL_001", "Skill not found"),
+
+    // Resume skill errors
+    RESUME_SKILL_001("RESUME_SKILL_001", "Resume skill not found"),
+    RESUME_SKILL_002("RESUME_SKILL_002", "Skill already added to resume"),
+
+    // Skill profile errors
+    PROFILE_001("PROFILE_001", "Skill profile not found");
 
     private final String code;
     private final String message;
