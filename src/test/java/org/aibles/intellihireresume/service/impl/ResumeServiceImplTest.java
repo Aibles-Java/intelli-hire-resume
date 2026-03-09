@@ -456,4 +456,43 @@ class ResumeServiceImplTest {
         verify(resumeRepository, never()).existsByUserIdAndTitleActiveExcluding(any(), any(), any());
         verify(resumeRepository).save(any(Resume.class));
     }
+
+    @Test
+    void create_ShouldTrimTitle_WhenTitleHasWhitespace() {
+        // Given — "  My Resume  " should be trimmed to "My Resume" before uniqueness check
+        CreateResumeRequest requestWithSpaces = CreateResumeRequest.builder()
+                .title("  Software Engineer Resume  ")
+                .build();
+
+        when(resumeRepository.existsByUserIdAndTitleActive(testUserId, "Software Engineer Resume"))
+                .thenReturn(false);
+        when(resumeRepository.save(any(Resume.class))).thenReturn(resume);
+
+        // When
+        ResumeResponse result = resumeService.create(testUserId, requestWithSpaces);
+
+        // Then
+        assertThat(result).isNotNull();
+        verify(resumeRepository).existsByUserIdAndTitleActive(testUserId, "Software Engineer Resume");
+        verify(resumeRepository).save(any(Resume.class));
+    }
+
+    @Test
+    void update_ShouldNotCallUniquenessCheck_WhenTitleIsUnchanged() {
+        // Given — new title equals current title → no uniqueness check required
+        CreateResumeRequest updateRequest = CreateResumeRequest.builder()
+                .title("Software Engineer Resume") // same as resume.getTitle()
+                .build();
+
+        when(resumeRepository.findByIdActive(testResumeId)).thenReturn(Optional.of(resume));
+        when(resumeRepository.save(any(Resume.class))).thenReturn(resume);
+
+        // When
+        ResumeResponse result = resumeService.update(testResumeId, updateRequest);
+
+        // Then
+        assertThat(result).isNotNull();
+        verify(resumeRepository, never()).existsByUserIdAndTitleActiveExcluding(any(), any(), any());
+        verify(resumeRepository).save(any(Resume.class));
+    }
 }

@@ -309,4 +309,92 @@ class ResumeExperienceServiceImplTest {
 
         verify(experienceRepository, never()).delete(any());
     }
+
+    @Test
+    void update_ShouldThrowBadRequestException_WhenStartDateAfterEndDate() {
+        // Given
+        ResumeExperienceRequest invalidRequest = ResumeExperienceRequest.builder()
+                .company("Acme Corp")
+                .title("Engineer")
+                .startDate(LocalDate.of(2023, 12, 31))
+                .endDate(LocalDate.of(2022, 1, 1))
+                .isCurrent(false)
+                .build();
+
+        when(resumeRepository.findByIdActive(testResumeId)).thenReturn(Optional.of(testResume));
+        when(experienceRepository.findById(testExperienceId)).thenReturn(Optional.of(testExperience));
+
+        // When & Then
+        assertThatThrownBy(() -> experienceService.update(testResumeId, testExperienceId, invalidRequest))
+                .isInstanceOf(BadRequestException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.EXP_002.getCode());
+
+        verify(experienceRepository, never()).save(any());
+    }
+
+    @Test
+    void update_ShouldThrowBadRequestException_WhenIsCurrentTrueAndEndDateNotNull() {
+        // Given
+        ResumeExperienceRequest invalidRequest = ResumeExperienceRequest.builder()
+                .company("Acme Corp")
+                .title("Engineer")
+                .startDate(LocalDate.of(2022, 1, 1))
+                .endDate(LocalDate.of(2023, 12, 31))
+                .isCurrent(true)
+                .build();
+
+        when(resumeRepository.findByIdActive(testResumeId)).thenReturn(Optional.of(testResume));
+        when(experienceRepository.findById(testExperienceId)).thenReturn(Optional.of(testExperience));
+
+        // When & Then
+        assertThatThrownBy(() -> experienceService.update(testResumeId, testExperienceId, invalidRequest))
+                .isInstanceOf(BadRequestException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.EXP_002.getCode());
+
+        verify(experienceRepository, never()).save(any());
+    }
+
+    @Test
+    void create_ShouldCreate_WhenDatesAreNull() {
+        // Given — null dates and isCurrent=false is a valid state
+        ResumeExperienceRequest requestNullDates = ResumeExperienceRequest.builder()
+                .company("Acme Corp")
+                .title("Engineer")
+                .startDate(null)
+                .endDate(null)
+                .isCurrent(false)
+                .build();
+
+        when(resumeRepository.findByIdActive(testResumeId)).thenReturn(Optional.of(testResume));
+        when(experienceRepository.save(any(ResumeExperience.class))).thenReturn(testExperience);
+
+        // When
+        ResumeExperienceResponse result = experienceService.create(testResumeId, requestNullDates);
+
+        // Then
+        assertThat(result).isNotNull();
+        verify(experienceRepository).save(any(ResumeExperience.class));
+    }
+
+    @Test
+    void create_ShouldCreate_WhenIsCurrentTrueAndEndDateIsNull() {
+        // Given — isCurrent=true with endDate=null is valid
+        ResumeExperienceRequest currentJobRequest = ResumeExperienceRequest.builder()
+                .company("Acme Corp")
+                .title("Engineer")
+                .startDate(LocalDate.of(2022, 1, 1))
+                .endDate(null)
+                .isCurrent(true)
+                .build();
+
+        when(resumeRepository.findByIdActive(testResumeId)).thenReturn(Optional.of(testResume));
+        when(experienceRepository.save(any(ResumeExperience.class))).thenReturn(testExperience);
+
+        // When
+        ResumeExperienceResponse result = experienceService.create(testResumeId, currentJobRequest);
+
+        // Then
+        assertThat(result).isNotNull();
+        verify(experienceRepository).save(any(ResumeExperience.class));
+    }
 }

@@ -14,8 +14,8 @@
 | STEP 2 | File Management (MinIO + Redis) | ✅ Hoàn thành |
 | STEP 3 | Contact Management | ✅ Hoàn thành |
 | STEP 4 | Experience Management | ✅ Hoàn thành |
-| STEP 5 | Education Management | ⬜ Chưa bắt đầu |
-| STEP 6 | Skills (Catalog + CRUD + Profile) | ⬜ Chưa bắt đầu |
+| STEP 5 | Education Management | ✅ Hoàn thành |
+| STEP 6 | Skills (Catalog + CRUD + Profile) | ✅ Hoàn thành |
 | STEP 7 | Content Extraction Engine | ⬜ Chưa bắt đầu |
 | STEP 8  | Production Readiness                       | ⬜ Chưa bắt đầu |
 | STEP 9  | Angular Project Setup + Core Architecture  | ⬜ Chưa bắt đầu |
@@ -283,43 +283,43 @@
 > Học vấn — pipeline write + manual edit.
 
 ### DTOs
-- [ ] `dto/ResumeEducationRequest.java` — fields: `school`, `degree`, `field`, `startYear`, `endYear`, `description`
+- [x] `dto/ResumeEducationRequest.java` — fields: `school`, `degree`, `field`, `startYear`, `endYear`, `description`
   - Validation: `startYear ≤ endYear`, năm trong khoảng 1900–current_year
-- [ ] `dto/ResumeEducationResponse.java`
+- [x] `dto/ResumeEducationResponse.java`
 
 ### Mapper
-- [ ] `mapper/ResumeEducationMapper.java` — `toEntity`, `toResponse`, `toResponseList`
+- [x] `mapper/ResumeEducationMapper.java` — `toEntity`, `toResponse`, `toResponseList`
 
 ### Repository
-- [ ] `repository/ResumeEducationRepository.java`: thêm `findByResumeId(String resumeId)`
+- [x] `repository/ResumeEducationRepository.java`: thêm `findByResumeId(String resumeId)`
 
 ### Service
-- [ ] `service/ResumeEducationService.java`: interface (`list`, `create`, `update`, `delete`)
-- [ ] `service/impl/ResumeEducationServiceImpl.java`:
+- [x] `service/ResumeEducationService.java`: interface (`list`, `create`, `update`, `delete`)
+- [x] `service/impl/ResumeEducationServiceImpl.java`:
   - Mọi method: validate resume tồn tại trước
   - `update`/`delete`: validate education thuộc đúng resumeId
 
 ### Error Codes
-- [ ] `exception/ErrorCode.java`: thêm `EDU_001` (Education not found)
-- [ ] `exception/ErrorCode.java`: thêm `EDU_002` (Invalid year range)
-- [ ] `exception/ErrorCode.java`: thêm `EDU_003` (Education does not belong to resume)
+- [x] `exception/ErrorCode.java`: thêm `EDU_001` (Education not found)
+- [x] `exception/ErrorCode.java`: thêm `EDU_002` (Invalid year range)
+- [x] `exception/ErrorCode.java`: thêm `EDU_003` (Education does not belong to resume)
 
 ### Controller
-- [ ] `controller/ResumeEducationController.java`: implement 4 endpoints
+- [x] `controller/ResumeEducationController.java`: implement 4 endpoints
   - `GET /api/v1/resumes/{resumeId}/educations` → 200 OK
   - `POST /api/v1/resumes/{resumeId}/educations` → 201 Created
   - `PUT /api/v1/resumes/{resumeId}/educations/{id}` → 200 OK
   - `DELETE /api/v1/resumes/{resumeId}/educations/{id}` → 200 OK
 
 ### Tests
-- [ ] `test/service/impl/ResumeEducationServiceImplTest.java`
-- [ ] `test/controller/ResumeEducationControllerTest.java`
+- [x] `test/service/impl/ResumeEducationServiceImplTest.java`
+- [x] `test/controller/ResumeEducationControllerTest.java`
 
 ### Verification STEP 5
-- [ ] `mvn test` — pass
-- [ ] `POST` với `startYear > endYear` → 400 EDU_002
-- [ ] `POST` với `startYear = 1800` → 400
-- [ ] `DELETE` education không thuộc resume → 404
+- [x] `mvn test` — pass
+- [x] `POST` với `startYear > endYear` → 400 EDU_002
+- [x] `POST` với `startYear = 1800` → 400
+- [x] `DELETE` education không thuộc resume → 404
 
 ---
 
@@ -327,37 +327,37 @@
 
 ### 6A — Skill Catalog (Seed + Read-only)
 
-- [ ] Tạo `src/main/resources/db/migration/V4__Seed_skills_data.sql`
+- [x] Tạo `src/main/resources/db/migration/V4__Seed_skills_data.sql`
   - Insert ~50 skills phổ biến: Java, Spring Boot, Python, Go, SQL, PostgreSQL, Redis, Docker, Kubernetes, React, TypeScript, Git, AWS, Linux, Kafka, MongoDB...
-- [ ] `dto/SkillResponse.java` — fields: `id`, `name`, `category`, `type`, `description`
-- [ ] `mapper/SkillMapper.java`
-- [ ] `repository/SkillRepository.java`: thêm queries
+- [x] `dto/SkillResponse.java` — fields: `id`, `name`, `category`, `type`, `description`
+- [x] `mapper/SkillMapper.java`
+- [x] `repository/SkillRepository.java`: thêm queries
   - `findByCategory(String category)`
   - `findByNameContainingIgnoreCase(String name)`
-- [ ] `service/SkillService.java`: interface (`list`, `getById`, `search`)
-- [ ] `service/impl/SkillServiceImpl.java`
-- [ ] `exception/ErrorCode.java`: thêm `SKILL_001` (Skill not found)
-- [ ] `controller/SkillController.java`: implement 3 endpoints (GET only, không có POST/PUT/DELETE)
+- [x] `service/SkillService.java`: interface (`list`, `getById`, `search`)
+- [x] `service/impl/SkillServiceImpl.java`
+- [x] `exception/ErrorCode.java`: thêm `SKILL_001` (Skill not found)
+- [x] `controller/SkillController.java`: implement 3 endpoints (GET only, không có POST/PUT/DELETE)
   - `GET /api/v1/skills?category=` → 200 OK
   - `GET /api/v1/skills/{id}` → 200 OK
   - `GET /api/v1/skills/search?q=` → 200 OK
 
 ### 6B — Resume Skills (Full CRUD)
 
-- [ ] `dto/ResumeSkillRequest.java` — fields: `skillId`, `proficiencyLevel`, `yearsExperience`, `confidenceScore`, `evidenceText`, `isPrimary`
-- [ ] `dto/ResumeSkillResponse.java`
-- [ ] `mapper/ResumeSkillMapper.java`
-- [ ] `repository/ResumeSkillRepository.java`: thêm queries
+- [x] `dto/ResumeSkillRequest.java` — fields: `skillId`, `proficiencyLevel`, `yearsExperience`, `confidenceScore`, `evidenceText`, `isPrimary`
+- [x] `dto/ResumeSkillResponse.java`
+- [x] `mapper/ResumeSkillMapper.java`
+- [x] `repository/ResumeSkillRepository.java`: thêm queries
   - `findByResumeId(String resumeId)`
   - `findByResumeIdAndSkillId(String resumeId, String skillId)`
   - `existsByResumeIdAndSkillId(String resumeId, String skillId)`
-- [ ] `service/ResumeSkillService.java`: interface (`list`, `create`, `update`, `delete`)
-- [ ] `service/impl/ResumeSkillServiceImpl.java`:
+- [x] `service/ResumeSkillService.java`: interface (`list`, `create`, `update`, `delete`)
+- [x] `service/impl/ResumeSkillServiceImpl.java`:
   - `create`: validate skill tồn tại trong catalog, validate resume tồn tại
   - `update`/`delete`: validate skill thuộc đúng resumeId
-- [ ] `exception/ErrorCode.java`: thêm `RESUME_SKILL_001` (Resume skill not found)
-- [ ] `exception/ErrorCode.java`: thêm `RESUME_SKILL_002` (Skill already added to resume)
-- [ ] `controller/ResumeSkillController.java`: implement 4 endpoints
+- [x] `exception/ErrorCode.java`: thêm `RESUME_SKILL_001` (Resume skill not found)
+- [x] `exception/ErrorCode.java`: thêm `RESUME_SKILL_002` (Skill already added to resume)
+- [x] `controller/ResumeSkillController.java`: implement 4 endpoints
   - `GET /api/v1/resumes/{resumeId}/skills` → 200 OK
   - `POST /api/v1/resumes/{resumeId}/skills` → 201 Created
   - `PUT /api/v1/resumes/{resumeId}/skills/{id}` → 200 OK
@@ -365,38 +365,38 @@
 
 ### 6C — Skill Profile
 
-- [ ] `dto/ResumeSkillProfileResponse.java` — fields: `resumeId`, `topSkills`, `yearsEstimated`, `seniority`, `summary`, `signals`, `generatedAt`
-- [ ] `dto/UpdateResumeSkillProfileRequest.java` — fields: `summary`, `signals`
-- [ ] `mapper/ResumeSkillProfileMapper.java`
-- [ ] `service/ResumeSkillProfileService.java`: interface (`getByResumeId`, `generate`, `update`)
-- [ ] `service/impl/ResumeSkillProfileServiceImpl.java`:
+- [x] `dto/ResumeSkillProfileResponse.java` — fields: `resumeId`, `topSkills`, `yearsEstimated`, `seniority`, `summary`, `signals`, `generatedAt`
+- [x] `dto/UpdateResumeSkillProfileRequest.java` — fields: `summary`, `signals`
+- [x] `mapper/ResumeSkillProfileMapper.java`
+- [x] `service/ResumeSkillProfileService.java`: interface (`getByResumeId`, `generate`, `update`)
+- [x] `service/impl/ResumeSkillProfileServiceImpl.java`:
   - `generate` logic:
     - Lấy tất cả ResumeSkill của resumeId
     - Sort by `confidenceScore` DESC → `topSkills`
     - `yearsEstimated` = max `yearsExperience` của primary skills
     - `seniority`: `<2yr=JUNIOR`, `2-5yr=MID`, `5-8yr=SENIOR`, `8+yr=PRINCIPAL`
     - Upsert ResumeSkillProfile
-- [ ] `controller/ResumeSkillProfileController.java`: implement 3 endpoints
+- [x] `controller/ResumeSkillProfileController.java`: implement 3 endpoints
   - `GET /api/v1/resumes/{resumeId}/skill-profile` → 200 OK
   - `POST /api/v1/resumes/{resumeId}/skill-profile/generate` → 200 OK
   - `PUT /api/v1/resumes/{resumeId}/skill-profile` → 200 OK
 
 ### Tests STEP 6
-- [ ] `test/service/impl/SkillServiceImplTest.java`
-- [ ] `test/controller/SkillControllerTest.java`
-- [ ] `test/service/impl/ResumeSkillServiceImplTest.java`
-- [ ] `test/controller/ResumeSkillControllerTest.java`
-- [ ] `test/service/impl/ResumeSkillProfileServiceImplTest.java`
-- [ ] `test/controller/ResumeSkillProfileControllerTest.java`
+- [x] `test/service/impl/SkillServiceImplTest.java`
+- [x] `test/controller/SkillControllerTest.java`
+- [x] `test/service/impl/ResumeSkillServiceImplTest.java`
+- [x] `test/controller/ResumeSkillControllerTest.java`
+- [x] `test/service/impl/ResumeSkillProfileServiceImplTest.java`
+- [x] `test/controller/ResumeSkillProfileControllerTest.java`
 
 ### Verification STEP 6
-- [ ] `mvn test` — pass
-- [ ] Skill catalog seed đúng: `GET /api/v1/skills` trả về ~50 skills
-- [ ] `GET /api/v1/skills/search?q=java` → trả về "Java"
-- [ ] `POST .../skills` với skillId không tồn tại → 404
-- [ ] `POST .../skills` với skillId đã thêm → 409 RESUME_SKILL_002
-- [ ] `POST .../skill-profile/generate` → profile được tạo với seniority đúng
-- [ ] `PUT /api/v1/skills/{id}` → 405 Method Not Allowed (read-only catalog)
+- [x] `mvn test` — pass
+- [x] Skill catalog seed đúng: `GET /api/v1/skills` trả về ~50 skills
+- [x] `GET /api/v1/skills/search?q=java` → trả về "Java"
+- [x] `POST .../skills` với skillId không tồn tại → 404
+- [x] `POST .../skills` với skillId đã thêm → 400 RESUME_SKILL_002
+- [x] `POST .../skill-profile/generate` → profile được tạo với seniority đúng
+- [x] `PUT /api/v1/skills/{id}` → 405 Method Not Allowed (read-only catalog)
 
 ---
 

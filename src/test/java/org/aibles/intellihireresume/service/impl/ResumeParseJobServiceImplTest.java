@@ -267,4 +267,131 @@ class ResumeParseJobServiceImplTest {
 
         verify(resumeParseJobRepository, never()).save(any());
     }
+
+    @Test
+    void cancel_ShouldThrowBadRequestException_WhenJobIsFailed() {
+        // Given — FAILED.canCancel() = false → JOB_002
+        ResumeParseJob failedJob = new ResumeParseJob();
+        failedJob.setId(testJobId);
+        failedJob.setResumeId(testResumeId);
+        failedJob.setStatus(JobStatus.FAILED);
+        failedJob.setJobType(JobType.PARSE);
+
+        when(resumeParseJobRepository.findById(testJobId)).thenReturn(Optional.of(failedJob));
+
+        // When & Then
+        assertThatThrownBy(() -> resumeParseJobService.cancel(testJobId))
+                .isInstanceOf(BadRequestException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.JOB_002.getCode());
+
+        verify(resumeParseJobRepository, never()).save(any());
+    }
+
+    @Test
+    void cancel_ShouldThrowBadRequestException_WhenJobIsCanceled() {
+        // Given — CANCELED.canCancel() = false → JOB_002
+        ResumeParseJob canceledJob = new ResumeParseJob();
+        canceledJob.setId(testJobId);
+        canceledJob.setResumeId(testResumeId);
+        canceledJob.setStatus(JobStatus.CANCELED);
+        canceledJob.setJobType(JobType.PARSE);
+
+        when(resumeParseJobRepository.findById(testJobId)).thenReturn(Optional.of(canceledJob));
+
+        // When & Then
+        assertThatThrownBy(() -> resumeParseJobService.cancel(testJobId))
+                .isInstanceOf(BadRequestException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.JOB_002.getCode());
+
+        verify(resumeParseJobRepository, never()).save(any());
+    }
+
+    @Test
+    void create_ShouldAllowCreation_WhenPreviousJobWasSucceeded() {
+        // Given — SUCCEEDED.canCancel() = false → no JOB_003, new job is allowed
+        when(resumeRepository.findByIdActive(testResumeId)).thenReturn(Optional.of(testResume));
+        when(resumeParseJobRepository.findByResumeId(testResumeId)).thenReturn(Optional.of(succeededJob));
+        when(resumeParseJobRepository.save(any(ResumeParseJob.class))).thenReturn(queuedJob);
+
+        // When
+        ParseJobResponse result = resumeParseJobService.create(testResumeId, JobType.PARSE);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getStatus()).isEqualTo(JobStatus.QUEUED);
+        verify(resumeParseJobRepository).save(any(ResumeParseJob.class));
+    }
+
+    @Test
+    void create_ShouldAllowCreation_WhenPreviousJobWasFailed() {
+        // Given — FAILED.canCancel() = false → no JOB_003, new job is allowed
+        ResumeParseJob failedJob = new ResumeParseJob();
+        failedJob.setId(testJobId);
+        failedJob.setResumeId(testResumeId);
+        failedJob.setStatus(JobStatus.FAILED);
+        failedJob.setJobType(JobType.PARSE);
+
+        when(resumeRepository.findByIdActive(testResumeId)).thenReturn(Optional.of(testResume));
+        when(resumeParseJobRepository.findByResumeId(testResumeId)).thenReturn(Optional.of(failedJob));
+        when(resumeParseJobRepository.save(any(ResumeParseJob.class))).thenReturn(queuedJob);
+
+        // When
+        ParseJobResponse result = resumeParseJobService.create(testResumeId, JobType.PARSE);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getStatus()).isEqualTo(JobStatus.QUEUED);
+        verify(resumeParseJobRepository).save(any(ResumeParseJob.class));
+    }
+
+    @Test
+    void create_ShouldAllowCreation_WhenPreviousJobWasCanceled() {
+        // Given — CANCELED.canCancel() = false → no JOB_003, new job is allowed
+        ResumeParseJob canceledJob = new ResumeParseJob();
+        canceledJob.setId(testJobId);
+        canceledJob.setResumeId(testResumeId);
+        canceledJob.setStatus(JobStatus.CANCELED);
+        canceledJob.setJobType(JobType.PARSE);
+
+        when(resumeRepository.findByIdActive(testResumeId)).thenReturn(Optional.of(testResume));
+        when(resumeParseJobRepository.findByResumeId(testResumeId)).thenReturn(Optional.of(canceledJob));
+        when(resumeParseJobRepository.save(any(ResumeParseJob.class))).thenReturn(queuedJob);
+
+        // When
+        ParseJobResponse result = resumeParseJobService.create(testResumeId, JobType.PARSE);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getStatus()).isEqualTo(JobStatus.QUEUED);
+        verify(resumeParseJobRepository).save(any(ResumeParseJob.class));
+    }
+
+    // UPDATE STATUS TESTS
+
+    @Test
+    void updateStatus_ShouldUpdateJobStatus_WhenJobExists() {
+        // Given
+        when(resumeParseJobRepository.findById(testJobId)).thenReturn(Optional.of(queuedJob));
+        when(resumeParseJobRepository.save(any(ResumeParseJob.class))).thenReturn(runningJob);
+
+        // When
+        resumeParseJobService.updateStatus(testJobId, JobStatus.RUNNING);
+
+        // Then
+        verify(resumeParseJobRepository).findById(testJobId);
+        verify(resumeParseJobRepository).save(argThat(job -> job.getStatus() == JobStatus.RUNNING));
+    }
+
+    @Test
+    void updateStatus_ShouldThrowNotFoundException_WhenJobNotFound() {
+        // Given
+        when(resumeParseJobRepository.findById(testJobId)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> resumeParseJobService.updateStatus(testJobId, JobStatus.RUNNING))
+                .isInstanceOf(NotFoundException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.JOB_001.getCode());
+
+        verify(resumeParseJobRepository, never()).save(any());
+    }
 }
