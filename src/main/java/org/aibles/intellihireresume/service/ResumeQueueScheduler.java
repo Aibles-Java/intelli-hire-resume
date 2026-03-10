@@ -15,10 +15,14 @@ public class ResumeQueueScheduler {
 
     @Scheduled(fixedDelay = 5000)
     public void pollAndDispatch() {
-        String resumeId = redisJobQueueService.dequeue();
-        if (resumeId != null) {
-            log.info("Dispatching worker for resumeId={}", resumeId);
-            resumeWorkerService.processJob(resumeId);
+        try {
+            String resumeId = redisJobQueueService.dequeue();
+            if (resumeId != null) {
+                log.info("Dispatching worker for resumeId={}", resumeId);
+                resumeWorkerService.processJob(resumeId);
+            }
+        } catch (Exception e) {
+            log.error("Error polling Redis queue: {}", e.getMessage());
         }
     }
 }

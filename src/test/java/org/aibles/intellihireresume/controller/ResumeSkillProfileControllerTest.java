@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -27,7 +26,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = ResumeSkillProfileController.class)
-@ActiveProfiles("test")
 class ResumeSkillProfileControllerTest {
 
     @Autowired
@@ -96,7 +94,7 @@ class ResumeSkillProfileControllerTest {
     @Test
     void getByResumeId_ShouldReturn400_WhenMissingXUserIdHeader() throws Exception {
         mockMvc.perform(get("/api/v1/resumes/{resumeId}/skill-profile", testResumeId))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isForbidden());
 
         verify(profileService, never()).getByResumeId(any());
     }

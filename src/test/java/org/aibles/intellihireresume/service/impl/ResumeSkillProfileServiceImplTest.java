@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.anyList;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -139,7 +141,7 @@ class ResumeSkillProfileServiceImplTest {
         when(resumeRepository.findByIdActive(testResumeId)).thenReturn(Optional.of(testResume));
         when(resumeSkillRepository.findByResumeIdOrderByConfidenceScoreDesc(testResumeId))
                 .thenReturn(List.of(testResumeSkill));
-        when(skillRepository.findById("skill-001")).thenReturn(Optional.of(testSkill));
+        when(skillRepository.findAllById(anyList())).thenReturn(List.of(testSkill));
         when(profileRepository.findByResumeId(testResumeId)).thenReturn(Optional.empty());
         when(profileRepository.save(any(ResumeSkillProfile.class))).thenReturn(testProfile);
 
@@ -154,7 +156,7 @@ class ResumeSkillProfileServiceImplTest {
         when(resumeRepository.findByIdActive(testResumeId)).thenReturn(Optional.of(testResume));
         when(resumeSkillRepository.findByResumeIdOrderByConfidenceScoreDesc(testResumeId))
                 .thenReturn(List.of(testResumeSkill));
-        when(skillRepository.findById("skill-001")).thenReturn(Optional.of(testSkill));
+        when(skillRepository.findAllById(anyList())).thenReturn(List.of(testSkill));
         when(profileRepository.findByResumeId(testResumeId)).thenReturn(Optional.of(testProfile));
         when(profileRepository.save(any(ResumeSkillProfile.class))).thenReturn(testProfile);
 
@@ -171,7 +173,7 @@ class ResumeSkillProfileServiceImplTest {
         when(resumeRepository.findByIdActive(testResumeId)).thenReturn(Optional.of(testResume));
         when(resumeSkillRepository.findByResumeIdOrderByConfidenceScoreDesc(testResumeId))
                 .thenReturn(List.of(testResumeSkill));
-        when(skillRepository.findById("skill-001")).thenReturn(Optional.of(testSkill));
+        when(skillRepository.findAllById(anyList())).thenReturn(List.of(testSkill));
         when(profileRepository.findByResumeId(testResumeId)).thenReturn(Optional.empty());
 
         ResumeSkillProfile savedProfile = new ResumeSkillProfile();

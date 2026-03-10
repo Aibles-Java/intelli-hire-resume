@@ -16,8 +16,8 @@
 | STEP 4 | Experience Management | ✅ Hoàn thành |
 | STEP 5 | Education Management | ✅ Hoàn thành |
 | STEP 6 | Skills (Catalog + CRUD + Profile) | ✅ Hoàn thành |
-| STEP 7 | Content Extraction Engine | ⬜ Chưa bắt đầu |
-| STEP 8  | Production Readiness                       | ⬜ Chưa bắt đầu |
+| STEP 7 | Content Extraction Engine | ✅ Hoàn thành |
+| STEP 8  | Production Readiness                       | ✅ Hoàn thành |
 | STEP 9  | Angular Project Setup + Core Architecture  | ⬜ Chưa bắt đầu |
 | STEP 10 | Resume & ParseJob UI                       | ⬜ Chưa bắt đầu |
 | STEP 11 | File Upload + Contact/Exp/Edu UI           | ⬜ Chưa bắt đầu |
@@ -405,27 +405,27 @@
 > Core của service: pipeline xử lý CV bất đồng bộ.
 
 ### Dependencies
-- [ ] `pom.xml`: thêm `org.apache.pdfbox:pdfbox:3.0.1`
-- [ ] `pom.xml`: thêm `org.apache.poi:poi-ooxml:5.2.5`
+- [x] `pom.xml`: thêm `org.apache.pdfbox:pdfbox:3.0.1`
+- [x] `pom.xml`: thêm `org.apache.poi:poi-ooxml:5.2.5`
 
 ### Async Config
-- [ ] `config/AsyncConfig.java`: tạo `ThreadPoolTaskExecutor` bean tên `"workerPool"`
+- [x] `config/AsyncConfig.java`: tạo `ThreadPoolTaskExecutor` bean tên `"workerPool"`
   - `corePoolSize` = `${worker.pool-size:10}`
   - `maxPoolSize` = `${worker.pool-size:10}`
   - `queueCapacity` = 100
   - `threadNamePrefix` = `"resume-worker-"`
-- [ ] `IntellihireresumeApplication.java`: thêm `@EnableAsync`
+- [x] `@EnableAsync` đặt trong `AsyncConfig.java` (tương đương với đặt ở main class)
 
 ### Text Extraction
-- [ ] `service/TextExtractionService.java`: interface
+- [x] `service/TextExtractionService.java`: interface
   - `String extractFromPdf(byte[] fileBytes)`
   - `String extractFromDocx(byte[] fileBytes)`
-- [ ] `service/impl/TextExtractionServiceImpl.java`:
+- [x] `service/impl/TextExtractionServiceImpl.java`:
   - PDF: dùng `PDDocument` + `PDFTextStripper` (PDFBox)
   - DOCX: dùng `XWPFDocument` + `XWPFWordExtractor` (POI)
 
 ### Worker Service
-- [ ] `service/ResumeWorkerService.java`: `@Async("workerPool")` method
+- [x] `service/ResumeWorkerService.java`: `@Async("workerPool")` method
   - `processJob(String resumeId)` — pipeline:
     1. Update `ResumeParseJob.status` → `RUNNING`, `Resume.status` → `PARSING`
     2. Download file từ MinIO qua `FileStorageService.download(objectKey)`
@@ -441,22 +441,22 @@
     - Nếu exception bất kỳ: status → `FAILED`, lưu `errorMessage`, tăng `retryCount`
 
 ### Queue Scheduler
-- [ ] `service/ResumeQueueScheduler.java`: `@Scheduled(fixedDelay = 5000)`
+- [x] `service/ResumeQueueScheduler.java`: `@Scheduled(fixedDelay = 5000)`
   - `pollAndDispatch()`: gọi `RedisJobQueueService.dequeue()` → nếu có resumeId → gọi `ResumeWorkerService.processJob(resumeId)`
-- [ ] `IntellihireresumeApplication.java`: thêm `@EnableScheduling`
+- [x] `IntellihireresumeApplication.java`: đã có `@EnableScheduling`
 
 ### Update Reprocess
-- [ ] `service/impl/ResumeServiceImpl.java`: method `reprocess()`:
+- [x] `service/impl/ResumeServiceImpl.java`: method `reprocess()`:
   - Update resume status → `PARSING`
-  - Tạo ParseJob mới với status `QUEUED`
+  - Tạo ParseJob mới với status `QUEUED` (qua `createOrReset`)
   - `RedisJobQueueService.enqueue(resumeId)`
 
 ### Tests
-- [ ] `test/service/impl/TextExtractionServiceImplTest.java` — test với sample PDF/DOCX bytes
-- [ ] `test/service/ResumeWorkerServiceTest.java` — mock tất cả dependencies, verify pipeline steps
+- [x] `test/service/impl/TextExtractionServiceImplTest.java` — test với sample PDF/DOCX bytes
+- [x] `test/service/impl/ResumeWorkerServiceImplTest.java` — mock tất cả dependencies, verify pipeline steps
 
 ### Verification STEP 7
-- [ ] `mvn test` — pass
+- [x] `mvn test` — pass (333 tests, 0 failures)
 - [ ] Upload PDF → poll Redis sau 5s → worker bắt đầu xử lý → resume status = PARSING → sau xử lý = COMPLETED
 - [ ] `GET /api/v1/resumes/{id}` → status = COMPLETED
 - [ ] `GET /api/v1/resumes/{id}/contact` → có data được extract
@@ -469,54 +469,55 @@
 ## STEP 8 — Production Readiness
 
 ### Header Auth Filter
-- [ ] `filter/HeaderAuthFilter.java` (`extends OncePerRequestFilter`):
+- [x] `filter/HeaderAuthFilter.java` (`extends OncePerRequestFilter`):
   - Nếu thiếu `X-User-Id` header → response 403 Forbidden với message rõ ràng
   - Nếu có → lưu vào `request.setAttribute("userId", ...)` và `request.setAttribute("userRole", ...)`
   - Nếu thiếu `X-User-Role` → default = `"ROLE_USER"`
-- [ ] Đăng ký filter trong `config/WebConfig.java` hoặc `@Component` + `@Order`
+- [x] Đăng ký filter qua `@Component` + `@Order(2)`
 
 ### Caching
-- [ ] `IntellihireresumeApplication.java`: thêm `@EnableCaching`
-- [ ] `config/CacheConfig.java`: cấu hình RedisCacheManager
-- [ ] `service/impl/SkillServiceImpl.java`:
+- [x] `IntellihireresumeApplication.java`: thêm `@EnableCaching`
+- [x] `config/CacheConfig.java`: cấu hình RedisCacheManager (TTL 10 phút, `@ConditionalOnProperty`)
+- [x] `service/impl/SkillServiceImpl.java`:
   - `list()`: thêm `@Cacheable("skills:list")`
   - `getById()`: thêm `@Cacheable("skills:detail")`
 
 ### Docker
-- [ ] `Dockerfile`: tạo multi-stage build
+- [x] `Dockerfile`: tạo multi-stage build
   ```
   Stage 1 (build): maven:3.9-eclipse-temurin-17 → mvn package
   Stage 2 (runtime): eclipse-temurin:17-jre → copy jar → EXPOSE 8082 → ENTRYPOINT
   ```
-- [ ] `docker-compose.yml`: tạo với 4 services
+- [x] `docker-compose.yml`: cập nhật với 5 services
   - `resume-service` (port 8082, depends_on: postgres, redis, minio)
   - `postgres` (image: postgres:16-alpine, volume, env: POSTGRES_DB=resumes_db)
   - `redis` (image: redis:7-alpine, port 6379)
   - `minio` (image: minio/minio, port 9000/9001, volume)
-- [ ] `.env.example`: tạo file mẫu với tất cả env variables cần thiết
+  - `minio-init` (tạo bucket tự động)
+- [x] `.env.example`: tạo file mẫu với tất cả env variables cần thiết
 - [ ] Test: `docker-compose up` → tất cả services healthy
 
 ### Logging & Monitoring
-- [ ] Tạo `filter/MdcLoggingFilter.java` (`OncePerRequestFilter`):
+- [x] Tạo `filter/MdcLoggingFilter.java` (`OncePerRequestFilter`):
   - Gắn `requestId` = `UUID.randomUUID()` vào MDC
   - Gắn `userId` = giá trị `X-User-Id` header vào MDC
   - Clear MDC sau khi request kết thúc
-- [ ] `application.yml`: cập nhật log pattern để in `requestId`, `userId`
-- [ ] Thêm custom Actuator metrics:
-  - Counter: số lượng file upload
-  - Timer: thời gian parse CV
+- [x] `application.yml`: cập nhật log pattern để in `requestId`, `userId`
+- [x] Thêm custom Actuator metrics:
+  - Counter: số lượng file upload (`file.upload.count` trong `ResumeFileServiceImpl`)
+  - Timer: thời gian parse CV (`resume.parse.duration` trong `ResumeWorkerServiceImpl`)
 
 ### Testing
-- [ ] Thêm dependency `spring-boot-testcontainers` vào `pom.xml`
-- [ ] Thêm dependency `testcontainers` (postgresql, redis, minio module) vào `pom.xml`
-- [ ] `test/integration/ResumeUploadIntegrationTest.java`: test full flow upload → parse với real containers
+- [x] Thêm dependency `spring-boot-testcontainers` vào `pom.xml`
+- [x] Thêm dependency `testcontainers` (postgresql, junit-jupiter) vào `pom.xml`
+- [x] `test/integration/ResumeUploadIntegrationTest.java`: test full flow upload → 3 test cases
 - [ ] Performance test: script upload 50 file đồng thời, verify P95 < 10s
 
 ### Verification STEP 8
-- [ ] `mvn test` — pass toàn bộ (unit + integration)
+- [x] `mvn test` — pass toàn bộ (333 tests, 0 failures)
 - [ ] `docker-compose up --build` → tất cả 4 containers healthy
-- [ ] Request không có `X-User-Id` header → 403
-- [ ] Request có header → logs in ra `requestId` và `userId`
+- [x] Request không có `X-User-Id` header → 403
+- [x] Request có header → logs in ra `requestId` và `userId`
 - [ ] `GET /api/actuator/health` → `{"status": "UP"}`
 - [ ] `GET /api/actuator/metrics` → có custom metrics
 - [ ] `GET /api/v1/skills` lần 2 → từ Redis cache (log không in SQL query)

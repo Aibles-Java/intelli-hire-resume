@@ -73,7 +73,8 @@ class ResumeWorkerServiceImplTest {
                 resumeRepository, resumeParseJobRepository, resumeFileRepository,
                 skillRepository, resumeSkillRepository, fileStorageService,
                 textExtractionService, resumeContactService, resumeExperienceService,
-                resumeEducationService, resumeSkillService, resumeSkillProfileService
+                resumeEducationService, resumeSkillService, resumeSkillProfileService,
+                new io.micrometer.core.instrument.simple.SimpleMeterRegistry()
         );
 
         testResume = new Resume();

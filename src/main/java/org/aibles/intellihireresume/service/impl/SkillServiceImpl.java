@@ -9,6 +9,7 @@ import org.aibles.intellihireresume.exception.NotFoundException;
 import org.aibles.intellihireresume.mapper.SkillMapper;
 import org.aibles.intellihireresume.repository.SkillRepository;
 import org.aibles.intellihireresume.service.SkillService;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ public class SkillServiceImpl implements SkillService {
     private final SkillMapper skillMapper;
 
     @Override
+    @Cacheable(value = "skills:list", key = "#category != null ? #category : 'ALL'")
     public List<SkillResponse> list(String category) {
         log.info("Listing skills with category: {}", category);
         List<Skill> skills;
@@ -36,6 +38,7 @@ public class SkillServiceImpl implements SkillService {
     }
 
     @Override
+    @Cacheable(value = "skills:detail", key = "#id")
     public SkillResponse getById(String id) {
         log.info("Getting skill by ID: {}", id);
         Skill skill = skillRepository.findById(id)

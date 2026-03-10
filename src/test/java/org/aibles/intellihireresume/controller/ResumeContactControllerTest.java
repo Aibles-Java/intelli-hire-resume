@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -24,7 +23,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = ResumeContactController.class)
-@ActiveProfiles("test")
 class ResumeContactControllerTest {
 
     @Autowired
@@ -160,7 +158,7 @@ class ResumeContactControllerTest {
         mockMvc.perform(put("/api/v1/resumes/{resumeId}/contact", testResumeId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isForbidden());
 
         verify(contactService, never()).createOrUpdate(any(), any());
     }
@@ -204,7 +202,7 @@ class ResumeContactControllerTest {
     @Test
     void getByResumeId_ShouldReturn400_WhenMissingXUserIdHeader() throws Exception {
         mockMvc.perform(get("/api/v1/resumes/{resumeId}/contact", testResumeId))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isForbidden());
 
         verify(contactService, never()).getByResumeId(any());
     }

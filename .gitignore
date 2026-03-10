@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Super Memory Plugin
+.supermemory/config.json
+.supermemory/cache/
