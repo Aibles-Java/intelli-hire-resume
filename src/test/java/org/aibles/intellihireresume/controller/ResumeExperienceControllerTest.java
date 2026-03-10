@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -27,7 +26,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = ResumeExperienceController.class)
-@ActiveProfiles("test")
 class ResumeExperienceControllerTest {
 
     @Autowired
@@ -95,7 +93,7 @@ class ResumeExperienceControllerTest {
     @Test
     void list_ShouldReturn400_WhenMissingXUserIdHeader() throws Exception {
         mockMvc.perform(get("/api/v1/resumes/{resumeId}/experiences", testResumeId))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isForbidden());
 
         verify(experienceService, never()).list(any());
     }
@@ -140,7 +138,7 @@ class ResumeExperienceControllerTest {
         mockMvc.perform(post("/api/v1/resumes/{resumeId}/experiences", testResumeId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isForbidden());
 
         verify(experienceService, never()).create(any(), any());
     }

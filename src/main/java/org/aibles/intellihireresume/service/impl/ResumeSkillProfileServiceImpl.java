@@ -6,6 +6,7 @@ import org.aibles.intellihireresume.dto.ResumeSkillProfileResponse;
 import org.aibles.intellihireresume.dto.UpdateResumeSkillProfileRequest;
 import org.aibles.intellihireresume.entity.ResumeSkill;
 import org.aibles.intellihireresume.entity.ResumeSkillProfile;
+import org.aibles.intellihireresume.entity.Skill;
 import org.aibles.intellihireresume.entity.enums.SeniorityLevel;
 import org.aibles.intellihireresume.exception.ErrorCode;
 import org.aibles.intellihireresume.exception.NotFoundException;
@@ -24,6 +25,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -54,12 +56,18 @@ public class ResumeSkillProfileServiceImpl implements ResumeSkillProfileService 
 
         List<ResumeSkill> resumeSkills = resumeSkillRepository.findByResumeIdOrderByConfidenceScoreDesc(resumeId);
 
+        // Batch-load all skills to avoid N+1 queries
+        List<String> skillIds = resumeSkills.stream().map(ResumeSkill::getSkillId).toList();
+        Map<String, Skill> skillMap = skillRepository.findAllById(skillIds).stream()
+                .collect(Collectors.toMap(Skill::getId, s -> s));
+
         // Build topSkills: skill name → confidence score (insertion-ordered by confidence DESC)
         Map<String, Object> topSkills = new LinkedHashMap<>();
         for (ResumeSkill rs : resumeSkills) {
-            skillRepository.findById(rs.getSkillId()).ifPresent(skill ->
-                    topSkills.put(skill.getName(), rs.getConfidenceScore() != null ? rs.getConfidenceScore() : BigDecimal.ZERO)
-            );
+            Skill skill = skillMap.get(rs.getSkillId());
+            if (skill != null) {
+                topSkills.put(skill.getName(), rs.getConfidenceScore() != null ? rs.getConfidenceScore() : BigDecimal.ZERO);
+            }
         }
 
         // yearsEstimated = max yearsExperience of primary skills; fallback to all skills

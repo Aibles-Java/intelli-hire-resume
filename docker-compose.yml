@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
 
   redis:
@@ -19,11 +17,11 @@ services:
     image: minio/minio:latest
     container_name: intellihire-minio
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
     ports:
-      - "9000:9000"   # API endpoint
-      - "9001:9001"   # Web Console
+      - "${MINIO_PORT:-9000}:9000"          # API endpoint
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"  # Web Console
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
@@ -43,10 +41,10 @@ services:
     entrypoint: >
       /bin/sh -c "
       sleep 5;
-      mc alias set local http://minio:9000 minioadmin minioadmin;
-      mc mb --ignore-existing local/resume-files;
-      mc anonymous set download local/resume-files;
-      echo 'Bucket resume-files created successfully';
+      mc alias set local http://minio:9000 ${MINIO_ACCESS_KEY:-minioadmin} ${MINIO_SECRET_KEY:-minioadmin};
+      mc mb --ignore-existing local/${MINIO_BUCKET:-resume-files};
+      mc anonymous set download local/${MINIO_BUCKET:-resume-files};
+      echo 'Bucket created successfully';
       "
     restart: on-failure
 

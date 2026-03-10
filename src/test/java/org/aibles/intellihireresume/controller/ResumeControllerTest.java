@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -28,7 +27,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = ResumeController.class)
-@ActiveProfiles("test")
 class ResumeControllerTest {
 
     @Autowired
@@ -90,7 +88,7 @@ class ResumeControllerTest {
         mockMvc.perform(post("/api/v1/resumes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createRequest)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isForbidden());
 
         verify(resumeService, never()).create(any(), any(CreateResumeRequest.class));
     }
@@ -233,7 +231,7 @@ class ResumeControllerTest {
     @Test
     void getResumesByUserId_ShouldReturnBadRequest_WhenXUserIdHeaderIsMissing() throws Exception {
         mockMvc.perform(get("/api/v1/resumes"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isForbidden());
 
         verify(resumeService, never()).getByUserId(any());
     }

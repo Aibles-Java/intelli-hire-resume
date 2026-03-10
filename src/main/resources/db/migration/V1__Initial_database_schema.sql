@@ -189,6 +189,8 @@ CREATE TABLE resume_skill_profiles (
     signals JSON,
     generated_at TIMESTAMP,
     generated_by VARCHAR(36),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(36) NOT NULL DEFAULT 'system',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_by VARCHAR(36),
     CONSTRAINT fk_resume_skill_profiles_resume FOREIGN KEY (resume_id) REFERENCES resumes(id)

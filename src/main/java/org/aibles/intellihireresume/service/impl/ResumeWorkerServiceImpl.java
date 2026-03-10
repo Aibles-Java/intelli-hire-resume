@@ -1,5 +1,7 @@
 package org.aibles.intellihireresume.service.impl;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aibles.intellihireresume.dto.ResumeContactRequest;
@@ -72,6 +74,7 @@ public class ResumeWorkerServiceImpl implements ResumeWorkerService {
     private final ResumeEducationService resumeEducationService;
     private final ResumeSkillService resumeSkillService;
     private final ResumeSkillProfileService resumeSkillProfileService;
+    private final MeterRegistry meterRegistry;
 
     @Async("workerPool")
     @Override
@@ -99,6 +102,9 @@ public class ResumeWorkerServiceImpl implements ResumeWorkerService {
         // Mark resume as PARSING
         resume.setStatus(ResumeStatus.PARSING);
         resumeRepository.save(resume);
+
+        Timer.Sample timerSample = Timer.start(meterRegistry);
+        String outcome = "success";
 
         try {
             // Step 1: Get file info
@@ -183,9 +189,14 @@ public class ResumeWorkerServiceImpl implements ResumeWorkerService {
 
         } catch (Exception e) {
             log.error("Worker failed for resumeId={}: {}", resumeId, e.getMessage(), e);
+            outcome = "failure";
             failJob(job, e.getMessage());
             resume.setStatus(ResumeStatus.FAILED);
             resumeRepository.save(resume);
+        } finally {
+            timerSample.stop(Timer.builder("resume.parse.duration")
+                    .tag("outcome", outcome)
+                    .register(meterRegistry));
         }
     }
 
@@ -486,8 +497,11 @@ public class ResumeWorkerServiceImpl implements ResumeWorkerService {
 
     private boolean containsSkill(String lowerText, String skillName) {
         if (skillName == null || skillName.isBlank()) return false;
-        // Use word-boundary matching to avoid false positives (e.g. "go" matching "google")
-        String escaped = Pattern.quote(skillName.toLowerCase());
+        String lowerSkill = skillName.toLowerCase();
+        // Fast pre-check: skip regex compilation if the skill name isn't even present
+        if (!lowerText.contains(lowerSkill)) return false;
+        // Word-boundary matching to avoid false positives (e.g. "go" matching "google")
+        String escaped = Pattern.quote(lowerSkill);
         Pattern p = Pattern.compile("(?<![a-zA-Z0-9])" + escaped + "(?![a-zA-Z0-9])");
         return p.matcher(lowerText).find();
     }

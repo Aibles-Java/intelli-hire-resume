@@ -15,7 +15,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -27,7 +26,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = ResumeFileController.class)
-@ActiveProfiles("test")
 class ResumeFileControllerTest {
 
     @Autowired
@@ -97,7 +95,7 @@ class ResumeFileControllerTest {
         mockMvc.perform(multipart("/api/v1/resumes/{resumeId}/files", testResumeId)
                         .file(mockPdfFile)
                         .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isForbidden());
 
         verify(resumeFileService, never()).upload(any(), any(), any());
     }

@@ -77,7 +77,7 @@ public class GlobalExceptionHandler {
         log.warn("HttpMessageNotReadableException: {}", ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(BaseResponse.error(ErrorCode.COM_003.getMessage(), null));
+                .body(BaseResponse.error(ErrorCode.COM_003.getCode(), null));
     }
 
     @ExceptionHandler(MissingRequestHeaderException.class)

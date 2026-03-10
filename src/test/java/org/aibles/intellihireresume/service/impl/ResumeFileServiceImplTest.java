@@ -69,7 +69,8 @@ class ResumeFileServiceImplTest {
                 resumeRepository,
                 fileStorageService,
                 redisJobQueueService,
-                resumeFileMapper
+                resumeFileMapper,
+                new io.micrometer.core.instrument.simple.SimpleMeterRegistry()
         );
         ReflectionTestUtils.setField(resumeFileService, "bucketName", "resume-files");
 

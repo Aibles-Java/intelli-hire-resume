@@ -1,5 +1,6 @@
 package org.aibles.intellihireresume.service.impl;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aibles.intellihireresume.dto.ResumeFileResponse;
@@ -18,6 +19,8 @@ import org.aibles.intellihireresume.service.ResumeFileService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
@@ -34,6 +37,7 @@ public class ResumeFileServiceImpl implements ResumeFileService {
     private final FileStorageService fileStorageService;
     private final RedisJobQueueService redisJobQueueService;
     private final ResumeFileMapper resumeFileMapper;
+    private final MeterRegistry meterRegistry;
 
     @Value("${minio.bucket-name}")
     private String bucketName;
@@ -75,8 +79,19 @@ public class ResumeFileServiceImpl implements ResumeFileService {
             resumeFile.setCreatedBy(userId);
 
             ResumeFile savedFile = resumeFileRepository.save(resumeFile);
+            meterRegistry.counter("file.upload.count", "fileType", fileType.name()).increment();
 
-            redisJobQueueService.enqueue(resumeId);
+            // Enqueue after DB commit to avoid orphaned queue entries on rollback
+            if (TransactionSynchronizationManager.isSynchronizationActive()) {
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        redisJobQueueService.enqueue(resumeId);
+                    }
+                });
+            } else {
+                redisJobQueueService.enqueue(resumeId);
+            }
 
             log.info("File uploaded successfully for resume: {}, fileId: {}", resumeId, savedFile.getId());
             return resumeFileMapper.toResponse(savedFile);
