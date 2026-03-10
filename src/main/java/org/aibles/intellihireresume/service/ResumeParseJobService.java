@@ -13,4 +13,6 @@ public interface ResumeParseJobService {
     ParseJobResponse cancel(String id);
 
     void updateStatus(String id, JobStatus status);
+
+    ParseJobResponse createOrReset(String resumeId, JobType jobType);
 }

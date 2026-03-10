@@ -5,12 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.aibles.intellihireresume.dto.CreateResumeRequest;
 import org.aibles.intellihireresume.dto.ResumeResponse;
 import org.aibles.intellihireresume.entity.Resume;
+import org.aibles.intellihireresume.entity.enums.JobType;
 import org.aibles.intellihireresume.entity.enums.ResumeStatus;
 import org.aibles.intellihireresume.exception.ErrorCode;
 import org.aibles.intellihireresume.exception.NotFoundException;
 import org.aibles.intellihireresume.exception.DuplicateException;
 import org.aibles.intellihireresume.mapper.ResumeMapper;
 import org.aibles.intellihireresume.repository.ResumeRepository;
+import org.aibles.intellihireresume.service.RedisJobQueueService;
+import org.aibles.intellihireresume.service.ResumeParseJobService;
 import org.aibles.intellihireresume.service.ResumeService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +28,8 @@ public class ResumeServiceImpl implements ResumeService {
 
     private final ResumeRepository resumeRepository;
     private final ResumeMapper resumeMapper;
+    private final ResumeParseJobService resumeParseJobService;
+    private final RedisJobQueueService redisJobQueueService;
 
     @Override
     public ResumeResponse create(String userId, CreateResumeRequest request) {
@@ -104,6 +109,9 @@ public class ResumeServiceImpl implements ResumeService {
         Resume resume = findById(id);
         setStatusToParsing(resume);
         Resume updatedResume = resumeRepository.save(resume);
+
+        resumeParseJobService.createOrReset(id, JobType.REPARSE);
+        redisJobQueueService.enqueue(id);
 
         log.info("Resume reprocess triggered successfully");
         return resumeMapper.toResponse(updatedResume);
