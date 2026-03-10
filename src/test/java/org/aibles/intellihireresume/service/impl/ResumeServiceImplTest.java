@@ -1,14 +1,18 @@
 package org.aibles.intellihireresume.service.impl;
 
 import org.aibles.intellihireresume.dto.CreateResumeRequest;
+import org.aibles.intellihireresume.dto.ParseJobResponse;
 import org.aibles.intellihireresume.dto.ResumeResponse;
 import org.aibles.intellihireresume.entity.Resume;
+import org.aibles.intellihireresume.entity.enums.JobType;
 import org.aibles.intellihireresume.entity.enums.ResumeStatus;
 import org.aibles.intellihireresume.exception.DuplicateException;
 import org.aibles.intellihireresume.exception.ErrorCode;
 import org.aibles.intellihireresume.exception.NotFoundException;
 import org.aibles.intellihireresume.mapper.ResumeMapper;
 import org.aibles.intellihireresume.repository.ResumeRepository;
+import org.aibles.intellihireresume.service.RedisJobQueueService;
+import org.aibles.intellihireresume.service.ResumeParseJobService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +38,12 @@ class ResumeServiceImplTest {
     @Mock
     private ResumeRepository resumeRepository;
 
+    @Mock
+    private ResumeParseJobService resumeParseJobService;
+
+    @Mock
+    private RedisJobQueueService redisJobQueueService;
+
     private ResumeMapper resumeMapper = new ResumeMapper();
 
     private ResumeServiceImpl resumeService;
@@ -46,7 +56,7 @@ class ResumeServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        resumeService = new ResumeServiceImpl(resumeRepository, resumeMapper);
+        resumeService = new ResumeServiceImpl(resumeRepository, resumeMapper, resumeParseJobService, redisJobQueueService);
 
         testUserId = "user-123";
         testResumeId = "resume-456";
@@ -380,6 +390,8 @@ class ResumeServiceImplTest {
 
         when(resumeRepository.findByIdActive(testResumeId)).thenReturn(Optional.of(failedResume));
         when(resumeRepository.save(any(Resume.class))).thenReturn(reprocessedResume);
+        when(resumeParseJobService.createOrReset(testResumeId, JobType.REPARSE))
+                .thenReturn(new ParseJobResponse());
 
         // When
         ResumeResponse result = resumeService.reprocess(testResumeId);
@@ -393,6 +405,8 @@ class ResumeServiceImplTest {
         verify(resumeRepository).save(argThat(savedResume ->
             savedResume.getStatus() == ResumeStatus.PARSING
         ));
+        verify(resumeParseJobService).createOrReset(testResumeId, JobType.REPARSE);
+        verify(redisJobQueueService).enqueue(testResumeId);
     }
 
     @Test

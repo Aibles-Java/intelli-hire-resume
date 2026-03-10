@@ -97,6 +97,39 @@ public class ResumeParseJobServiceImpl implements ResumeParseJobService {
         resumeParseJobRepository.save(job);
     }
 
+    @Override
+    public ParseJobResponse createOrReset(String resumeId, JobType jobType) {
+        log.info("Creating or resetting parse job for resume: {}, type: {}", resumeId, jobType);
+
+        resumeRepository.findByIdActive(resumeId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.RES_001));
+
+        Optional<ResumeParseJob> existingJob = resumeParseJobRepository.findByResumeId(resumeId);
+
+        ResumeParseJob job;
+        if (existingJob.isPresent()) {
+            job = existingJob.get();
+            job.setJobType(jobType);
+            job.setStatus(JobStatus.QUEUED);
+            job.setProgress(0);
+            job.setRetryCount(0);
+            job.setErrorMessage(null);
+            job.setStartedAt(null);
+            job.setFinishedAt(null);
+        } else {
+            job = new ResumeParseJob();
+            job.setResumeId(resumeId);
+            job.setJobType(jobType);
+            job.setStatus(JobStatus.QUEUED);
+            job.setProgress(0);
+            job.setRetryCount(0);
+        }
+
+        ResumeParseJob saved = resumeParseJobRepository.save(job);
+        log.info("Parse job created/reset successfully with ID: {}", saved.getId());
+        return parseJobMapper.toResponse(saved);
+    }
+
     private ResumeParseJob findById(String id) {
         return resumeParseJobRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.JOB_001));
