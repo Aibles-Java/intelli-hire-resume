@@ -28,7 +28,8 @@ public class HeaderAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return request.getRequestURI().startsWith("/actuator");
+        return request.getRequestURI().startsWith("/actuator")
+                || "OPTIONS".equalsIgnoreCase(request.getMethod());
     }
 
     @Override
