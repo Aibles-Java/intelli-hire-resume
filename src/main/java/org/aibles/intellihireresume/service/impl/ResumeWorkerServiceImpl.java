@@ -126,7 +126,8 @@ public class ResumeWorkerServiceImpl implements ResumeWorkerService {
                 rawText = textExtractionService.extractFromDocx(fileBytes);
             }
 
-            // Step 4: Save raw text to resume
+            // Step 4: Save raw text to resume (sanitize null bytes — PostgreSQL UTF8 rejects 0x00)
+            rawText = sanitize(rawText);
             resume.setRawText(rawText);
             resumeRepository.save(resume);
             job.setProgress(30);
@@ -539,5 +540,10 @@ public class ResumeWorkerServiceImpl implements ResumeWorkerService {
     private String truncate(String value, int maxLength) {
         if (value == null) return null;
         return value.length() <= maxLength ? value : value.substring(0, maxLength);
+    }
+
+    private String sanitize(String value) {
+        if (value == null) return null;
+        return value.replace("\u0000", "");
     }
 }

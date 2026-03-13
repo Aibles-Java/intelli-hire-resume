@@ -25,7 +25,7 @@ public class ResumeParseJobController {
             @RequestHeader("X-User-Id") String userId,
             @Valid @RequestBody ParseJobRequest request) {
         log.info("POST /api/v1/parse-jobs - userId: {}, resumeId: {}", userId, request.getResumeId());
-        ParseJobResponse response = resumeParseJobService.create(request.getResumeId(), request.getJobType());
+        ParseJobResponse response = resumeParseJobService.createOrReset(request.getResumeId(), request.getJobType());
         return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.success(response));
     }
 

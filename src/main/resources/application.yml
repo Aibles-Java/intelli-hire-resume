@@ -17,7 +17,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: false
     properties:
       hibernate:
@@ -38,6 +38,30 @@ spring:
     deserialization:
       fail-on-unknown-properties: false
 
+  data:
+    redis:
+      host: ${REDIS_HOST:}
+      port: ${REDIS_PORT:}
+      timeout: 2000
+      connect-timeout: 2000
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000
+      cache-null-values: false
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+minio:
+  endpoint: ${MINIO_ENDPOINT:}
+  access-key: ${MINIO_ACCESS_KEY:}
+  secret-key: ${MINIO_SECRET_KEY:}
+  bucket-name: ${MINIO_BUCKET:}
+
 logging:
   level:
     org:
@@ -50,12 +74,10 @@ logging:
             sql:
               BasicBinder: ${SQL_LOG_LEVEL:WARN}
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{requestId}] [%X{userId}] %-5level %logger{36} - %msg%n"
 
 server:
   port: ${SERVER_PORT:8080}
-  servlet:
-    context-path: /api
 
 management:
   endpoints:

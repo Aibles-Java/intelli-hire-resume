@@ -18,7 +18,7 @@
 | STEP 6 | Skills (Catalog + CRUD + Profile) | ✅ Hoàn thành |
 | STEP 7 | Content Extraction Engine | ✅ Hoàn thành |
 | STEP 8  | Production Readiness                       | ✅ Hoàn thành |
-| STEP 9  | Angular Project Setup + Core Architecture  | ⬜ Chưa bắt đầu |
+| STEP 9  | Angular Project Setup + Core Architecture  | ✅ Hoàn thành |
 | STEP 10 | Resume & ParseJob UI                       | ⬜ Chưa bắt đầu |
 | STEP 11 | File Upload + Contact/Exp/Edu UI           | ⬜ Chưa bắt đầu |
 | STEP 12 | Skills & Skill Profile UI                  | ⬜ Chưa bắt đầu |
@@ -532,26 +532,26 @@
 > Tạo nền tảng Angular frontend tương tác với tất cả 32 REST API của backend.
 
 ### Project Init
-- [ ] Khởi tạo project: `ng new intelli-hire-frontend --standalone`
+- [x] Khởi tạo project: `ng new intelli-hire-frontend --standalone`
   - Thư mục: `intelli-hire-frontend/` tại root repo
-- [ ] Cài Angular Material: `ng add @angular/material`
-- [ ] Cấu hình lazy-loaded routing (`app.routes.ts`)
+- [x] Cài Angular Material: `ng add @angular/material`
+- [x] Cấu hình lazy-loaded routing (`app.routes.ts`)
 
 ### HTTP & Interceptors
-- [ ] `core/interceptors/auth.interceptor.ts`: tự động gắn header `X-User-Id` + `X-User-Role` vào mọi request (lấy từ localStorage)
-- [ ] `core/interceptors/error.interceptor.ts`: bắt HTTP 4xx/5xx → hiển thị snackbar message
+- [x] `core/interceptors/auth.interceptor.ts`: tự động gắn header `X-User-Id` + `X-User-Role` vào mọi request (lấy từ localStorage)
+- [x] `core/interceptors/error.interceptor.ts`: bắt HTTP 4xx/5xx → hiển thị snackbar message
 
 ### Environment Config
-- [ ] `environments/environment.ts`: `apiUrl: 'http://localhost:8082'`
-- [ ] `environments/environment.prod.ts`: `apiUrl` lấy từ env variable (NGINX inject)
+- [x] `environments/environment.ts`: `apiUrl: 'http://localhost:8082'`
+- [x] `environments/environment.prod.ts`: `apiUrl` lấy từ env variable (NGINX inject)
 
 ### Core Services
-- [ ] `core/services/api.service.ts`: base service với generic `get`, `post`, `put`, `delete` methods
+- [x] `core/services/api.service.ts`: base service với generic `get`, `post`, `put`, `delete` methods
 
 ### Shared Components
-- [ ] `shared/components/loading-spinner/` — overlay loading indicator
-- [ ] `shared/components/error-alert/` — hiển thị lỗi API dạng snackbar
-- [ ] `shared/components/confirm-dialog/` — dialog xác nhận trước khi xóa
+- [x] `shared/components/loading-spinner/` — overlay loading indicator
+- [x] `shared/components/error-alert/` — hiển thị lỗi API dạng snackbar (via MatSnackBar in error interceptor)
+- [x] `shared/components/confirm-dialog/` — dialog xác nhận trước khi xóa
 
 ### Verification STEP 9
 - [ ] `ng serve` → app khởi động tại port 4200 không lỗi
