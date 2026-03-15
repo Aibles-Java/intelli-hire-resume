@@ -29,9 +29,9 @@ public class ResumeContactServiceImpl implements ResumeContactService {
     public ResumeContactResponse getByResumeId(String resumeId) {
         log.info("Getting contact for resume ID: {}", resumeId);
         validateResumeExists(resumeId);
-        ResumeContact contact = contactRepository.findByResumeId(resumeId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.CONTACT_001));
-        return contactMapper.toResponse(contact);
+        return contactRepository.findByResumeId(resumeId)
+                .map(contactMapper::toResponse)
+                .orElse(ResumeContactResponse.builder().resumeId(resumeId).build());
     }
 
     @Override
