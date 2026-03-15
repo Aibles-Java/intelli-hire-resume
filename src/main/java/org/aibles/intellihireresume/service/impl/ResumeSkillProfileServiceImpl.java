@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.UUID;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,6 +88,7 @@ public class ResumeSkillProfileServiceImpl implements ResumeSkillProfileService 
         ResumeSkillProfile profile = profileRepository.findByResumeId(resumeId)
                 .orElseGet(() -> {
                     ResumeSkillProfile p = new ResumeSkillProfile();
+                    p.setId(UUID.randomUUID().toString());
                     p.setResumeId(resumeId);
                     p.setGeneratedAt(LocalDateTime.now());
                     return p;
