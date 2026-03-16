@@ -52,7 +52,12 @@ public enum ErrorCode {
     RESUME_SKILL_002("RESUME_SKILL_002", "Skill already added to resume"),
 
     // Skill profile errors
-    PROFILE_001("PROFILE_001", "Skill profile not found");
+    PROFILE_001("PROFILE_001", "Skill profile not found"),
+
+    // AI provider errors
+    AI_001("AI_001", "AI provider authentication failed"),
+    AI_002("AI_002", "AI provider request failed"),
+    AI_003("AI_003", "AI parsing failed after maximum retries");
 
     private final String code;
     private final String message;

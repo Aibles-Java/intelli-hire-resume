@@ -10,4 +10,6 @@ public interface ResumeSkillProfileService {
     ResumeSkillProfileResponse generate(String resumeId);
 
     ResumeSkillProfileResponse update(String resumeId, UpdateResumeSkillProfileRequest request);
+
+    void upsertSummary(String resumeId, String summary);
 }

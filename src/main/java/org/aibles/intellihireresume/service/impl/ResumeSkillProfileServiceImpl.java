@@ -116,6 +116,20 @@ public class ResumeSkillProfileServiceImpl implements ResumeSkillProfileService 
         return profileMapper.toResponse(saved);
     }
 
+    @Override
+    @Transactional
+    public void upsertSummary(String resumeId, String summary) {
+        log.info("Upserting summary for resume ID: {}", resumeId);
+        ResumeSkillProfile profile = profileRepository.findByResumeId(resumeId)
+            .orElseGet(() -> {
+                ResumeSkillProfile p = new ResumeSkillProfile();
+                p.setResumeId(resumeId);
+                return p;
+            });
+        profile.setSummary(summary);
+        profileRepository.save(profile);
+    }
+
     private void validateResumeExists(String resumeId) {
         if (resumeRepository.findByIdActive(resumeId).isEmpty()) {
             throw new NotFoundException(ErrorCode.RES_001);

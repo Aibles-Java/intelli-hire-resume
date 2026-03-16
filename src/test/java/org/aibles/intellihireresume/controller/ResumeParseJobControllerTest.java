@@ -70,7 +70,7 @@ class ResumeParseJobControllerTest {
 
     @Test
     void createParseJob_ShouldReturn201_WhenValidRequest() throws Exception {
-        when(resumeParseJobService.create(eq(testResumeId), eq(JobType.PARSE))).thenReturn(jobResponse);
+        when(resumeParseJobService.createOrReset(eq(testResumeId), eq(JobType.PARSE))).thenReturn(jobResponse);
 
         mockMvc.perform(post("/api/v1/parse-jobs")
                         .header("X-User-Id", testUserId)
@@ -85,12 +85,12 @@ class ResumeParseJobControllerTest {
                 .andExpect(jsonPath("$.data.job_type").value("PARSE"))
                 .andExpect(jsonPath("$.data.progress").value(0));
 
-        verify(resumeParseJobService).create(testResumeId, JobType.PARSE);
+        verify(resumeParseJobService).createOrReset(testResumeId, JobType.PARSE);
     }
 
     @Test
     void createParseJob_ShouldReturn404_WhenResumeNotFound() throws Exception {
-        when(resumeParseJobService.create(eq(testResumeId), eq(JobType.PARSE)))
+        when(resumeParseJobService.createOrReset(eq(testResumeId), eq(JobType.PARSE)))
                 .thenThrow(new NotFoundException(ErrorCode.RES_001));
 
         mockMvc.perform(post("/api/v1/parse-jobs")
@@ -102,12 +102,12 @@ class ResumeParseJobControllerTest {
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.error_code").value("RES_001"));
 
-        verify(resumeParseJobService).create(testResumeId, JobType.PARSE);
+        verify(resumeParseJobService).createOrReset(testResumeId, JobType.PARSE);
     }
 
     @Test
     void createParseJob_ShouldReturn400_WhenJobAlreadyRunning() throws Exception {
-        when(resumeParseJobService.create(eq(testResumeId), eq(JobType.PARSE)))
+        when(resumeParseJobService.createOrReset(eq(testResumeId), eq(JobType.PARSE)))
                 .thenThrow(new BadRequestException(ErrorCode.JOB_003));
 
         mockMvc.perform(post("/api/v1/parse-jobs")
@@ -119,7 +119,7 @@ class ResumeParseJobControllerTest {
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.error_code").value("JOB_003"));
 
-        verify(resumeParseJobService).create(testResumeId, JobType.PARSE);
+        verify(resumeParseJobService).createOrReset(testResumeId, JobType.PARSE);
     }
 
     @Test
