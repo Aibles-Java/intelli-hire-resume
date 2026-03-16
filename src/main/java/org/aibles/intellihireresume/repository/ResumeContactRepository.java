@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface ResumeContactRepository extends JpaRepository<ResumeContact, String> {
 
     Optional<ResumeContact> findByResumeId(String resumeId);
+
+    void deleteByResumeId(String resumeId);
 }

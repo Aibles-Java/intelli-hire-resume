@@ -17,4 +17,6 @@ public interface ResumeSkillRepository extends JpaRepository<ResumeSkill, String
     boolean existsByResumeIdAndSkillId(String resumeId, String skillId);
 
     List<ResumeSkill> findByResumeIdOrderByConfidenceScoreDesc(String resumeId);
+
+    void deleteByResumeId(String resumeId);
 }
