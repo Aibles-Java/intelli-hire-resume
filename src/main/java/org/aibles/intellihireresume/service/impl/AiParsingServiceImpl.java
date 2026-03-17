@@ -14,6 +14,7 @@ import org.aibles.intellihireresume.dto.ai.AiSkillResult;
 import org.aibles.intellihireresume.dto.ai.ResumeParseResult;
 import org.aibles.intellihireresume.entity.Skill;
 import org.aibles.intellihireresume.exception.AiAuthException;
+import org.aibles.intellihireresume.exception.AiRateLimitException;
 import org.aibles.intellihireresume.repository.ResumeContactRepository;
 import org.aibles.intellihireresume.repository.ResumeEducationRepository;
 import org.aibles.intellihireresume.repository.ResumeExperienceRepository;
@@ -26,6 +27,7 @@ import org.aibles.intellihireresume.service.ResumeEducationService;
 import org.aibles.intellihireresume.service.ResumeExperienceService;
 import org.aibles.intellihireresume.service.ResumeSkillProfileService;
 import org.aibles.intellihireresume.service.ResumeSkillService;
+import org.aibles.intellihireresume.service.TextExtractionService;
 import org.aibles.intellihireresume.service.ai.AiProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +46,7 @@ public class AiParsingServiceImpl implements AiParsingService {
 
     private final AiProvider aiProvider;
     private final AiProperties aiProperties;
+    private final TextExtractionService textExtractionService;
     private final SkillRepository skillRepository;
     private final ResumeContactService resumeContactService;
     private final ResumeExperienceService resumeExperienceService;
@@ -57,6 +60,7 @@ public class AiParsingServiceImpl implements AiParsingService {
     private final ResumeSkillProfileRepository resumeSkillProfileRepository;
 
     @Override
+    @Transactional
     public void parse(String rawText, String resumeId) {
         log.info("Starting AI parsing for resumeId={}", resumeId);
 
@@ -74,6 +78,56 @@ public class AiParsingServiceImpl implements AiParsingService {
         log.info("AI parsing completed for resumeId={}", resumeId);
     }
 
+    @Override
+    @Transactional
+    public void parseFromFile(byte[] fileBytes, String mimeType, String resumeId) {
+        log.info("Starting AI file parsing for resumeId={}, mimeType={}", resumeId, mimeType);
+
+        List<Skill> allSkills = skillRepository.findByIsActiveTrue();
+        List<String> catalogNames = allSkills.stream().map(Skill::getName).toList();
+        Map<String, Skill> catalogByName = allSkills.stream()
+            .collect(Collectors.toMap(Skill::getName, s -> s));
+
+        log.info("Skill catalog loaded: {} skills", catalogNames.size());
+
+        ResumeParseResult result;
+        if (aiProvider.supportsFileInput()) {
+            log.info("Provider supports native file input — sending PDF bytes directly to AI");
+            result = parseFromBytesWithRetry(fileBytes, mimeType, catalogNames);
+        } else {
+            log.info("Provider does not support file input — falling back to text extraction");
+            String rawText = "application/pdf".equals(mimeType)
+                ? textExtractionService.extractFromPdf(fileBytes)
+                : textExtractionService.extractFromDocx(fileBytes);
+            result = parseWithRetry(rawText, catalogNames);
+        }
+
+        persistResults(resumeId, result, catalogByName);
+        log.info("AI file parsing completed for resumeId={}", resumeId);
+    }
+
+    private ResumeParseResult parseFromBytesWithRetry(byte[] fileBytes, String mimeType, List<String> catalogNames) {
+        int maxRetries = aiProperties.getMaxRetries();
+        Exception lastException = null;
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                return aiProvider.parseFromBytes(fileBytes, mimeType, catalogNames);
+            } catch (AiAuthException e) {
+                throw e;
+            } catch (AiRateLimitException e) {
+                lastException = e;
+                log.warn("AI rate limited (429), attempt {}/{}, waiting {}s", attempt, maxRetries, e.getRetryAfterSeconds());
+                if (attempt < maxRetries) sleepSeconds(e.getRetryAfterSeconds());
+            } catch (Exception e) {
+                lastException = e;
+                log.warn("AI file parse attempt {}/{} failed: {}", attempt, maxRetries, e.getMessage());
+                if (attempt < maxRetries) sleepSeconds((long) Math.pow(2, attempt));
+            }
+        }
+        throw new RuntimeException("AI file parsing failed after " + maxRetries + " attempts", lastException);
+    }
+
     private ResumeParseResult parseWithRetry(String rawText, List<String> catalogNames) {
         int maxRetries = aiProperties.getMaxRetries();
         Exception lastException = null;
@@ -83,6 +137,13 @@ public class AiParsingServiceImpl implements AiParsingService {
                 return aiProvider.parse(rawText, catalogNames);
             } catch (AiAuthException e) {
                 throw e; // 401 — no retry
+            } catch (AiRateLimitException e) {
+                lastException = e;
+                log.warn("AI rate limited (429), attempt {}/{}, waiting {}s before retry",
+                        attempt, maxRetries, e.getRetryAfterSeconds());
+                if (attempt < maxRetries) {
+                    sleepSeconds(e.getRetryAfterSeconds());
+                }
             } catch (Exception e) {
                 lastException = e;
                 log.warn("AI parse attempt {}/{} failed: {}", attempt, maxRetries, e.getMessage());

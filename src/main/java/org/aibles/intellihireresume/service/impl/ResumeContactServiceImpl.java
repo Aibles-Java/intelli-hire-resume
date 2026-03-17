@@ -31,7 +31,7 @@ public class ResumeContactServiceImpl implements ResumeContactService {
         validateResumeExists(resumeId);
         return contactRepository.findByResumeId(resumeId)
                 .map(contactMapper::toResponse)
-                .orElse(ResumeContactResponse.builder().resumeId(resumeId).build());
+                .orElseThrow(() -> new NotFoundException(ErrorCode.CONTACT_001));
     }
 
     @Override

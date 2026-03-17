@@ -13,10 +13,6 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(callSuper = true)
 public class ResumeSkill extends BaseEntity {
     
-    @Id
-    @Column(name = "id", length = 36)
-    private String id;
-    
     @Column(name = "resume_id", length = 36, nullable = false)
     private String resumeId;
     

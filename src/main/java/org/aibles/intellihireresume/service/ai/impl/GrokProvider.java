@@ -13,16 +13,20 @@ import org.springframework.web.client.RestClient;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * xAI Grok provider — uses OpenAI-compatible chat completions API.
+ * Base URL: https://api.x.ai/v1
+ */
 @Slf4j
-public class OpenAiProvider implements AiProvider {
+public class GrokProvider implements AiProvider {
 
-    private static final String BASE_URL = "https://api.openai.com/v1";
+    private static final String BASE_URL = "https://api.x.ai/v1";
 
-    private final AiProperties.OpenAiConfig config;
+    private final AiProperties.GrokConfig config;
     private final ObjectMapper objectMapper;
     private final RestClient restClient;
 
-    public OpenAiProvider(AiProperties.OpenAiConfig config) {
+    public GrokProvider(AiProperties.GrokConfig config) {
         this.config = config;
         this.objectMapper = new ObjectMapper();
 
@@ -55,7 +59,7 @@ public class OpenAiProvider implements AiProvider {
 
         try {
             String requestJson = objectMapper.writeValueAsString(requestBody);
-            log.debug("Calling OpenAI model={}", config.getModel());
+            log.debug("Calling Grok model={}", config.getModel());
 
             String responseJson = restClient.post()
                 .uri("/chat/completions")
@@ -69,10 +73,10 @@ public class OpenAiProvider implements AiProvider {
                     throw new AiRateLimitException(waitSeconds);
                 })
                 .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                    (req, resp) -> { throw new RuntimeException("OpenAI API error: " + resp.getStatusCode()); })
+                    (req, resp) -> { throw new RuntimeException("Grok API error: " + resp.getStatusCode()); })
                 .body(String.class);
 
-            // Navigate: choices[0].message.content
+            // OpenAI-compatible response: choices[0].message.content
             Map<?, ?> response = objectMapper.readValue(responseJson, Map.class);
             List<?> choices = (List<?>) response.get("choices");
             Map<?, ?> message = (Map<?, ?>) ((Map<?, ?>) choices.get(0)).get("message");
@@ -85,7 +89,7 @@ public class OpenAiProvider implements AiProvider {
         } catch (AiRateLimitException e) {
             throw e;
         } catch (Exception e) {
-            throw new RuntimeException("OpenAI call failed: " + e.getMessage(), e);
+            throw new RuntimeException("Grok API call failed: " + e.getMessage(), e);
         }
     }
 

@@ -14,6 +14,7 @@ import org.aibles.intellihireresume.repository.ResumeFileRepository;
 import org.aibles.intellihireresume.repository.ResumeRepository;
 import org.aibles.intellihireresume.service.FileStorageService;
 import org.aibles.intellihireresume.service.RedisJobQueueService;
+import org.aibles.intellihireresume.service.ResumeParseJobService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,6 +52,9 @@ class ResumeFileServiceImplTest {
     @Mock
     private RedisJobQueueService redisJobQueueService;
 
+    @Mock
+    private ResumeParseJobService resumeParseJobService;
+
     private ResumeFileMapper resumeFileMapper = new ResumeFileMapper();
 
     private ResumeFileServiceImpl resumeFileService;
@@ -69,6 +73,7 @@ class ResumeFileServiceImplTest {
                 resumeRepository,
                 fileStorageService,
                 redisJobQueueService,
+                resumeParseJobService,
                 resumeFileMapper,
                 new io.micrometer.core.instrument.simple.SimpleMeterRegistry()
         );

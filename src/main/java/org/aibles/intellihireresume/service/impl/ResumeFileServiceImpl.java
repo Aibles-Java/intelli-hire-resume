@@ -13,9 +13,11 @@ import org.aibles.intellihireresume.exception.NotFoundException;
 import org.aibles.intellihireresume.mapper.ResumeFileMapper;
 import org.aibles.intellihireresume.repository.ResumeFileRepository;
 import org.aibles.intellihireresume.repository.ResumeRepository;
+import org.aibles.intellihireresume.entity.enums.JobType;
 import org.aibles.intellihireresume.service.FileStorageService;
 import org.aibles.intellihireresume.service.RedisJobQueueService;
 import org.aibles.intellihireresume.service.ResumeFileService;
+import org.aibles.intellihireresume.service.ResumeParseJobService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +38,7 @@ public class ResumeFileServiceImpl implements ResumeFileService {
     private final ResumeRepository resumeRepository;
     private final FileStorageService fileStorageService;
     private final RedisJobQueueService redisJobQueueService;
+    private final ResumeParseJobService resumeParseJobService;
     private final ResumeFileMapper resumeFileMapper;
     private final MeterRegistry meterRegistry;
 
@@ -80,6 +83,9 @@ public class ResumeFileServiceImpl implements ResumeFileService {
 
             ResumeFile savedFile = resumeFileRepository.save(resumeFile);
             meterRegistry.counter("file.upload.count", "fileType", fileType.name()).increment();
+
+            // Auto-create or reset parse job so worker can process immediately after upload
+            resumeParseJobService.createOrReset(resumeId, JobType.PARSE);
 
             // Enqueue after DB commit to avoid orphaned queue entries on rollback
             if (TransactionSynchronizationManager.isSynchronizationActive()) {

@@ -6,6 +6,7 @@ import org.aibles.intellihireresume.entity.ResumeExperience;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -16,6 +17,7 @@ public class ResumeExperienceMapper {
             return null;
         }
         ResumeExperience experience = new ResumeExperience();
+        experience.setId(UUID.randomUUID().toString());
         experience.setResumeId(resumeId);
         experience.setCompany(request.getCompany());
         experience.setTitle(request.getTitle());

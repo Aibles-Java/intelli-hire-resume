@@ -6,6 +6,7 @@ import org.aibles.intellihireresume.entity.ResumeSkill;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -16,6 +17,7 @@ public class ResumeSkillMapper {
             return null;
         }
         ResumeSkill skill = new ResumeSkill();
+        skill.setId(UUID.randomUUID().toString());
         skill.setResumeId(resumeId);
         skill.setSkillId(request.getSkillId());
         skill.setProficiencyLevel(request.getProficiencyLevel());
