@@ -6,6 +6,7 @@ import org.aibles.intellihireresume.entity.ResumeEducation;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -16,6 +17,7 @@ public class ResumeEducationMapper {
             return null;
         }
         ResumeEducation education = new ResumeEducation();
+        education.setId(UUID.randomUUID().toString());
         education.setResumeId(resumeId);
         education.setSchool(request.getSchool());
         education.setDegree(request.getDegree());

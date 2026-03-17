@@ -5,6 +5,8 @@ import org.aibles.intellihireresume.dto.ResumeContactResponse;
 import org.aibles.intellihireresume.entity.ResumeContact;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 public class ResumeContactMapper {
 
@@ -13,6 +15,7 @@ public class ResumeContactMapper {
             return null;
         }
         ResumeContact contact = new ResumeContact();
+        contact.setId(UUID.randomUUID().toString());
         contact.setResumeId(resumeId);
         contact.setFullName(request.getFullName());
         contact.setEmail(request.getEmail());

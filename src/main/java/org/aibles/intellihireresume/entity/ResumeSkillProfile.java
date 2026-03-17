@@ -18,10 +18,6 @@ import java.util.Map;
 @EqualsAndHashCode(callSuper = true)
 public class ResumeSkillProfile extends BaseEntity {
     
-    @Id
-    @Column(name = "id", length = 36)
-    private String id;
-    
     @Column(name = "resume_id", length = 36, nullable = false, unique = true)
     private String resumeId;
     

@@ -3,6 +3,7 @@ package org.aibles.intellihireresume.integration;
 import org.aibles.intellihireresume.entity.Resume;
 import org.aibles.intellihireresume.entity.enums.ResumeStatus;
 import org.aibles.intellihireresume.repository.ResumeFileRepository;
+import org.aibles.intellihireresume.repository.ResumeParseJobRepository;
 import org.aibles.intellihireresume.repository.ResumeRepository;
 import org.aibles.intellihireresume.service.FileStorageService;
 import org.aibles.intellihireresume.service.RedisJobQueueService;
@@ -60,6 +61,9 @@ class ResumeUploadIntegrationTest {
     @Autowired
     private ResumeFileRepository resumeFileRepository;
 
+    @Autowired
+    private ResumeParseJobRepository resumeParseJobRepository;
+
     @MockBean
     private FileStorageService fileStorageService;
 
@@ -71,6 +75,7 @@ class ResumeUploadIntegrationTest {
     @BeforeEach
     void setUp() throws Exception {
         resumeFileRepository.deleteAll();
+        resumeParseJobRepository.deleteAll();
         resumeRepository.deleteAll();
 
         testResume = new Resume();

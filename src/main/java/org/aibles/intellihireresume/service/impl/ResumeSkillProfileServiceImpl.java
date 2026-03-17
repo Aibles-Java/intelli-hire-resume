@@ -125,6 +125,7 @@ public class ResumeSkillProfileServiceImpl implements ResumeSkillProfileService 
         ResumeSkillProfile profile = profileRepository.findByResumeId(resumeId)
             .orElseGet(() -> {
                 ResumeSkillProfile p = new ResumeSkillProfile();
+                p.setId(java.util.UUID.randomUUID().toString());
                 p.setResumeId(resumeId);
                 return p;
             });
