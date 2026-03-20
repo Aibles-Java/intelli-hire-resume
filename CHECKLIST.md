@@ -327,8 +327,6 @@
 
 ### 6A — Skill Catalog (Seed + Read-only)
 
-- [x] Tạo `src/main/resources/db/migration/V4__Seed_skills_data.sql`
-  - Insert ~50 skills phổ biến: Java, Spring Boot, Python, Go, SQL, PostgreSQL, Redis, Docker, Kubernetes, React, TypeScript, Git, AWS, Linux, Kafka, MongoDB...
 - [x] `dto/SkillResponse.java` — fields: `id`, `name`, `category`, `type`, `description`
 - [x] `mapper/SkillMapper.java`
 - [x] `repository/SkillRepository.java`: thêm queries

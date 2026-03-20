@@ -3,7 +3,7 @@
 -- =====================================================
 
 -- Create skills table
-CREATE TABLE skills (
+CREATE TABLE IF NOT EXISTS skills (
     id VARCHAR(36) PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
     category VARCHAR(50),
@@ -18,12 +18,12 @@ CREATE TABLE skills (
 );
 
 -- Create indexes for skills table
-CREATE INDEX idx_skills_name ON skills(name);
-CREATE INDEX idx_skills_category_type ON skills(category, type);
-CREATE INDEX idx_skills_is_active ON skills(is_active);
+CREATE INDEX IF NOT EXISTS idx_skills_name ON skills(name);
+CREATE INDEX IF NOT EXISTS idx_skills_category_type ON skills(category, type);
+CREATE INDEX IF NOT EXISTS idx_skills_is_active ON skills(is_active);
 
 -- Create resumes table
-CREATE TABLE resumes (
+CREATE TABLE IF NOT EXISTS resumes (
     id VARCHAR(36) PRIMARY KEY,
     user_id VARCHAR(36) NOT NULL,
     title VARCHAR(255),
@@ -37,13 +37,13 @@ CREATE TABLE resumes (
 );
 
 -- Create indexes for resumes table
-CREATE INDEX idx_resumes_user_id ON resumes(user_id);
-CREATE INDEX idx_resumes_status ON resumes(status);
-CREATE INDEX idx_resumes_is_active ON resumes(is_active);
-CREATE INDEX idx_resumes_user_status ON resumes(user_id, status, is_active);
+CREATE INDEX IF NOT EXISTS idx_resumes_user_id ON resumes(user_id);
+CREATE INDEX IF NOT EXISTS idx_resumes_status ON resumes(status);
+CREATE INDEX IF NOT EXISTS idx_resumes_is_active ON resumes(is_active);
+CREATE INDEX IF NOT EXISTS idx_resumes_user_status ON resumes(user_id, status, is_active);
 
 -- Create resume_files table
-CREATE TABLE resume_files (
+CREATE TABLE IF NOT EXISTS resume_files (
     id VARCHAR(36) PRIMARY KEY,
     resume_id VARCHAR(36) NOT NULL UNIQUE,
     original_name VARCHAR(255) NOT NULL,
@@ -60,11 +60,11 @@ CREATE TABLE resume_files (
 );
 
 -- Create indexes for resume_files table
-CREATE INDEX idx_resume_files_resume_id ON resume_files(resume_id);
-CREATE INDEX idx_resume_files_file_type ON resume_files(file_type);
+CREATE INDEX IF NOT EXISTS idx_resume_files_resume_id ON resume_files(resume_id);
+CREATE INDEX IF NOT EXISTS idx_resume_files_file_type ON resume_files(file_type);
 
 -- Create resume_parse_jobs table
-CREATE TABLE resume_parse_jobs (
+CREATE TABLE IF NOT EXISTS resume_parse_jobs (
     id VARCHAR(36) PRIMARY KEY,
     resume_id VARCHAR(36) NOT NULL UNIQUE,
     status VARCHAR(20) NOT NULL,
@@ -82,13 +82,13 @@ CREATE TABLE resume_parse_jobs (
 );
 
 -- Create indexes for resume_parse_jobs table
-CREATE INDEX idx_resume_parse_jobs_status ON resume_parse_jobs(status);
-CREATE INDEX idx_resume_parse_jobs_job_type ON resume_parse_jobs(job_type);
-CREATE INDEX idx_resume_parse_jobs_created_at ON resume_parse_jobs(created_at);
-CREATE INDEX idx_resume_parse_jobs_retry ON resume_parse_jobs(retry_count, status);
+CREATE INDEX IF NOT EXISTS idx_resume_parse_jobs_status ON resume_parse_jobs(status);
+CREATE INDEX IF NOT EXISTS idx_resume_parse_jobs_job_type ON resume_parse_jobs(job_type);
+CREATE INDEX IF NOT EXISTS idx_resume_parse_jobs_created_at ON resume_parse_jobs(created_at);
+CREATE INDEX IF NOT EXISTS idx_resume_parse_jobs_retry ON resume_parse_jobs(retry_count, status);
 
 -- Create resume_skills table
-CREATE TABLE resume_skills (
+CREATE TABLE IF NOT EXISTS resume_skills (
     id VARCHAR(36) PRIMARY KEY,
     resume_id VARCHAR(36) NOT NULL,
     skill_id VARCHAR(36) NOT NULL,
@@ -109,13 +109,13 @@ CREATE TABLE resume_skills (
 );
 
 -- Create indexes for resume_skills table
-CREATE INDEX idx_resume_skills_resume_id ON resume_skills(resume_id);
-CREATE INDEX idx_resume_skills_skill_id ON resume_skills(skill_id);
-CREATE INDEX idx_resume_skills_confidence ON resume_skills(resume_id, confidence_score DESC);
-CREATE INDEX idx_resume_skills_primary ON resume_skills(resume_id, is_primary);
+CREATE INDEX IF NOT EXISTS idx_resume_skills_resume_id ON resume_skills(resume_id);
+CREATE INDEX IF NOT EXISTS idx_resume_skills_skill_id ON resume_skills(skill_id);
+CREATE INDEX IF NOT EXISTS idx_resume_skills_confidence ON resume_skills(resume_id, confidence_score DESC);
+CREATE INDEX IF NOT EXISTS idx_resume_skills_primary ON resume_skills(resume_id, is_primary);
 
 -- Create resume_experiences table
-CREATE TABLE resume_experiences (
+CREATE TABLE IF NOT EXISTS resume_experiences (
     id VARCHAR(36) PRIMARY KEY,
     resume_id VARCHAR(36) NOT NULL,
     company VARCHAR(255) NOT NULL,
@@ -132,12 +132,12 @@ CREATE TABLE resume_experiences (
 );
 
 -- Create indexes for resume_experiences table
-CREATE INDEX idx_resume_experiences_resume_id ON resume_experiences(resume_id);
-CREATE INDEX idx_resume_experiences_dates ON resume_experiences(resume_id, start_date DESC);
-CREATE INDEX idx_resume_experiences_current ON resume_experiences(resume_id, is_current);
+CREATE INDEX IF NOT EXISTS idx_resume_experiences_resume_id ON resume_experiences(resume_id);
+CREATE INDEX IF NOT EXISTS idx_resume_experiences_dates ON resume_experiences(resume_id, start_date DESC);
+CREATE INDEX IF NOT EXISTS idx_resume_experiences_current ON resume_experiences(resume_id, is_current);
 
 -- Create resume_educations table
-CREATE TABLE resume_educations (
+CREATE TABLE IF NOT EXISTS resume_educations (
     id VARCHAR(36) PRIMARY KEY,
     resume_id VARCHAR(36) NOT NULL,
     school VARCHAR(255) NOT NULL,
@@ -154,11 +154,11 @@ CREATE TABLE resume_educations (
 );
 
 -- Create indexes for resume_educations table
-CREATE INDEX idx_resume_educations_resume_id ON resume_educations(resume_id);
-CREATE INDEX idx_resume_educations_years ON resume_educations(resume_id, end_year DESC);
+CREATE INDEX IF NOT EXISTS idx_resume_educations_resume_id ON resume_educations(resume_id);
+CREATE INDEX IF NOT EXISTS idx_resume_educations_years ON resume_educations(resume_id, end_year DESC);
 
 -- Create resume_contacts table
-CREATE TABLE resume_contacts (
+CREATE TABLE IF NOT EXISTS resume_contacts (
     id VARCHAR(36) PRIMARY KEY,
     resume_id VARCHAR(36) UNIQUE,
     full_name VARCHAR(255),
@@ -175,11 +175,11 @@ CREATE TABLE resume_contacts (
 );
 
 -- Create indexes for resume_contacts table
-CREATE INDEX idx_resume_contacts_resume_id ON resume_contacts(resume_id);
-CREATE INDEX idx_resume_contacts_email ON resume_contacts(email);
+CREATE INDEX IF NOT EXISTS idx_resume_contacts_resume_id ON resume_contacts(resume_id);
+CREATE INDEX IF NOT EXISTS idx_resume_contacts_email ON resume_contacts(email);
 
 -- Create resume_skill_profiles table
-CREATE TABLE resume_skill_profiles (
+CREATE TABLE IF NOT EXISTS resume_skill_profiles (
     id VARCHAR(36) PRIMARY KEY,
     resume_id VARCHAR(36) NOT NULL UNIQUE,
     top_skills JSON,
@@ -197,5 +197,5 @@ CREATE TABLE resume_skill_profiles (
 );
 
 -- Create indexes for resume_skill_profiles table
-CREATE INDEX idx_resume_skill_profiles_seniority ON resume_skill_profiles(seniority);
-CREATE INDEX idx_resume_skill_profiles_years ON resume_skill_profiles(years_estimated);
+CREATE INDEX IF NOT EXISTS idx_resume_skill_profiles_seniority ON resume_skill_profiles(seniority);
+CREATE INDEX IF NOT EXISTS idx_resume_skill_profiles_years ON resume_skill_profiles(years_estimated);
