@@ -290,7 +290,6 @@ worker:
 > Không có admin CRUD. Skills được seed qua migration và match trong pipeline.
 
 **Files cần tạo:**
-- `V4__Seed_skills_data.sql`: insert ~50 skill phổ biến (Java, Spring Boot, Python, SQL, Docker, React...)
 - `dto/SkillResponse.java`
 - `mapper/SkillMapper.java`
 - `service/SkillService.java`: `list(category)`, `getById`, `search(query)`
