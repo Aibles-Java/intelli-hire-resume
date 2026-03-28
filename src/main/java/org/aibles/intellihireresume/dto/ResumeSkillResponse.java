@@ -20,6 +20,7 @@ public class ResumeSkillResponse {
     private String id;
     private String resumeId;
     private String skillId;
+    private String skillName;
     private String proficiencyLevel;
     private BigDecimal yearsExperience;
     private BigDecimal confidenceScore;
