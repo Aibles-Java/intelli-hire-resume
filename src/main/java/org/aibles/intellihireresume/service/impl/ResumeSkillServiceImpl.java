@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.aibles.intellihireresume.dto.ResumeSkillRequest;
 import org.aibles.intellihireresume.dto.ResumeSkillResponse;
 import org.aibles.intellihireresume.entity.ResumeSkill;
+import org.aibles.intellihireresume.entity.Skill;
 import org.aibles.intellihireresume.exception.BadRequestException;
 import org.aibles.intellihireresume.exception.ErrorCode;
 import org.aibles.intellihireresume.exception.NotFoundException;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -34,7 +37,15 @@ public class ResumeSkillServiceImpl implements ResumeSkillService {
     public List<ResumeSkillResponse> list(String resumeId) {
         log.info("Listing resume skills for resume ID: {}", resumeId);
         validateResumeExists(resumeId);
-        return resumeSkillMapper.toResponseList(resumeSkillRepository.findByResumeId(resumeId));
+        List<ResumeSkill> resumeSkills = resumeSkillRepository.findByResumeId(resumeId);
+        List<String> skillIds = resumeSkills.stream().map(ResumeSkill::getSkillId).toList();
+        Map<String, String> skillNames = skillRepository.findAllById(skillIds).stream()
+                .collect(Collectors.toMap(Skill::getId, Skill::getName));
+        return resumeSkills.stream().map(rs -> {
+            ResumeSkillResponse r = resumeSkillMapper.toResponse(rs);
+            r.setSkillName(skillNames.getOrDefault(rs.getSkillId(), rs.getSkillId()));
+            return r;
+        }).toList();
     }
 
     @Override
