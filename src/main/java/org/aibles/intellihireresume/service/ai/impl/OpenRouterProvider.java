@@ -95,6 +95,52 @@ public class OpenRouterProvider implements AiProvider {
         }
     }
 
+    /**
+     * General-purpose chat completion. Sends a system + user prompt to OpenRouter
+     * and returns the raw response content string (typically JSON).
+     */
+    @Override
+    public String complete(String systemPrompt, String userPrompt) {
+        Map<String, Object> requestBody = Map.of(
+            "model", config.getModel(),
+            "response_format", Map.of("type", "json_object"),
+            "messages", List.of(
+                Map.of("role", "system", "content", systemPrompt),
+                Map.of("role", "user", "content", userPrompt)
+            )
+        );
+
+        try {
+            String requestJson = objectMapper.writeValueAsString(requestBody);
+            log.debug("Calling OpenRouter complete(), model={}", config.getModel());
+
+            String responseJson = restClient.post()
+                .uri("/chat/completions")
+                .body(requestJson)
+                .retrieve()
+                .onStatus(status -> status.value() == 401,
+                    (req, resp) -> { throw new AiAuthException(); })
+                .onStatus(status -> status.value() == 429, (req, resp) -> {
+                    String retryAfter = resp.getHeaders().getFirst("Retry-After");
+                    long waitSeconds = retryAfter != null ? Long.parseLong(retryAfter) : 60L;
+                    throw new AiRateLimitException(waitSeconds);
+                })
+                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                    (req, resp) -> { throw new RuntimeException("OpenRouter API error: " + resp.getStatusCode()); })
+                .body(String.class);
+
+            Map<?, ?> response = objectMapper.readValue(responseJson, Map.class);
+            List<?> choices = (List<?>) response.get("choices");
+            Map<?, ?> message = (Map<?, ?>) ((Map<?, ?>) choices.get(0)).get("message");
+            return (String) message.get("content");
+
+        } catch (AiAuthException | AiRateLimitException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("OpenRouter complete() failed: " + e.getMessage(), e);
+        }
+    }
+
     private String buildSystemPrompt(String catalogStr) {
         return """
             You are a professional CV/resume parser. Extract structured information from the resume text.

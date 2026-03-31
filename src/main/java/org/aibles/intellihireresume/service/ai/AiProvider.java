@@ -26,4 +26,12 @@ public interface AiProvider {
     default boolean supportsFileInput() {
         return false;
     }
+
+    /**
+     * General-purpose chat completion returning raw JSON string.
+     * Default throws UnsupportedOperationException; override in providers that support it.
+     */
+    default String complete(String systemPrompt, String userPrompt) {
+        throw new UnsupportedOperationException("This AI provider does not support complete()");
+    }
 }
