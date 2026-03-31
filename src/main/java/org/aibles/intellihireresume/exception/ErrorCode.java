@@ -57,7 +57,12 @@ public enum ErrorCode {
     // AI provider errors
     AI_001("AI_001", "AI provider authentication failed"),
     AI_002("AI_002", "AI provider request failed"),
-    AI_003("AI_003", "AI parsing failed after maximum retries");
+    AI_003("AI_003", "AI parsing failed after maximum retries"),
+
+    // Review errors
+    REVIEW_001("REVIEW_001", "Resume review not found"),
+    REVIEW_002("REVIEW_002", "Cannot generate review: no CV file uploaded"),
+    REVIEW_003("REVIEW_003", "AI review response could not be parsed");
 
     private final String code;
     private final String message;
