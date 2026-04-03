@@ -22,11 +22,7 @@ import org.aibles.intellihireresume.repository.ResumeSkillProfileRepository;
 import org.aibles.intellihireresume.repository.ResumeSkillRepository;
 import org.aibles.intellihireresume.repository.SkillRepository;
 import org.aibles.intellihireresume.service.AiParsingService;
-import org.aibles.intellihireresume.service.ResumeContactService;
-import org.aibles.intellihireresume.service.ResumeEducationService;
-import org.aibles.intellihireresume.service.ResumeExperienceService;
 import org.aibles.intellihireresume.service.ResumeSkillProfileService;
-import org.aibles.intellihireresume.service.ResumeSkillService;
 import org.aibles.intellihireresume.service.TextExtractionService;
 import org.aibles.intellihireresume.service.ai.AiProvider;
 import org.springframework.stereotype.Service;
@@ -48,11 +44,8 @@ public class AiParsingServiceImpl implements AiParsingService {
     private final AiProperties aiProperties;
     private final TextExtractionService textExtractionService;
     private final SkillRepository skillRepository;
-    private final ResumeContactService resumeContactService;
-    private final ResumeExperienceService resumeExperienceService;
-    private final ResumeEducationService resumeEducationService;
-    private final ResumeSkillService resumeSkillService;
     private final ResumeSkillProfileService resumeSkillProfileService;
+    private final AiPersistenceHelper aiPersistenceHelper;
     private final ResumeContactRepository resumeContactRepository;
     private final ResumeExperienceRepository resumeExperienceRepository;
     private final ResumeEducationRepository resumeEducationRepository;
@@ -171,7 +164,7 @@ public class AiParsingServiceImpl implements AiParsingService {
         AiContactResult contact = result.contact();
         if (contact != null) {
             try {
-                resumeContactService.createOrUpdate(resumeId, ResumeContactRequest.builder()
+                aiPersistenceHelper.saveContact(resumeId, ResumeContactRequest.builder()
                     .fullName(contact.fullName())
                     .email(contact.email())
                     .phone(contact.phone())
@@ -195,7 +188,7 @@ public class AiParsingServiceImpl implements AiParsingService {
                     ? LocalDate.of(exp.endYear(), exp.endMonth() != null ? exp.endMonth() : 12, 1)
                     : null;
 
-                resumeExperienceService.create(resumeId, ResumeExperienceRequest.builder()
+                aiPersistenceHelper.saveExperience(resumeId, ResumeExperienceRequest.builder()
                     .company(exp.company())
                     .title(exp.title())
                     .startDate(startDate)
@@ -212,7 +205,7 @@ public class AiParsingServiceImpl implements AiParsingService {
         for (AiEducationResult edu : result.educations()) {
             if (edu.school() == null) continue;
             try {
-                resumeEducationService.create(resumeId, ResumeEducationRequest.builder()
+                aiPersistenceHelper.saveEducation(resumeId, ResumeEducationRequest.builder()
                     .school(edu.school())
                     .degree(edu.degree())
                     .field(edu.field())
@@ -243,7 +236,7 @@ public class AiParsingServiceImpl implements AiParsingService {
                     ? aiSkill.evidenceText().substring(0, Math.min(aiSkill.evidenceText().length(), 500))
                     : null;
 
-                resumeSkillService.create(resumeId, ResumeSkillRequest.builder()
+                aiPersistenceHelper.saveSkill(resumeId, ResumeSkillRequest.builder()
                     .skillId(skill.getId())
                     .confidenceScore(confidence)
                     .yearsExperience(years)

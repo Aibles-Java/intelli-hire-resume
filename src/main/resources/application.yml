@@ -112,6 +112,6 @@ ai:
   openrouter:
     api-key: ${OPENROUTER_API_KEY:}
     model: ${OPENROUTER_MODEL:x-ai/grok-4.1-fast}
-    timeout-seconds: ${AI_TIMEOUT:60}
+    timeout-seconds: ${AI_TIMEOUT:120}
     site-url: ${OPENROUTER_SITE_URL:https://intellihire.dev}
     site-name: ${OPENROUTER_SITE_NAME:IntelliHire}
