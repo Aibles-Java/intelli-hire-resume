@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Candidate Pipeline — IntelliHire</title>
+  <meta name="description" content="Manage your recruitment pipeline with a visual Kanban board. Track candidates from application to hire with AI-powered insights.">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Candidate Pipeline — IntelliHire">
+  <meta property="og:description" content="Visual Kanban pipeline for managing candidates through every hiring stage.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="/images/og-intellihire.jpg">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230A0A0F'/><text y='24' x='5' font-size='20' fill='%2300F0FF'>⚡</text></svg>">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'bg-primary': '#0A0A0F',
+            'bg-secondary': '#12121A',
+            'bg-card': '#16161F',
+            'bg-card-hover': '#1E1E2D',
+            'bg-elevated': '#1F1F2F',
+            accent: '#00F0FF',
+            'accent-dim': '#00B8C5',
+            'accent-secondary': '#FF3D71',
+            success: '#00E68A',
+            warning: '#FFAA00',
+            danger: '#FF3D71',
+            'text-primary': '#EEF0F6',
+            'text-secondary': '#8B8FA3',
+            'text-tertiary': '#5A5E72',
+          },
+          fontFamily: {
+            display: ['Syne', 'system-ui', 'sans-serif'],
+            body: ['DM Sans', 'system-ui', 'sans-serif'],
+          },
+          borderColor: {
+            DEFAULT: 'rgba(255,255,255,0.06)',
+            accent: 'rgba(0,240,255,0.2)',
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: #0A0A0F;
+      color: #EEF0F6;
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 1; box-shadow: 0 0 4px #00F0FF; }
+      50% { opacity: 0.4; box-shadow: 0 0 14px #00F0FF; }
+    }
+    @keyframes scan-line {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(3000%); }
+    }
+    @keyframes scoreFill {
+      from { stroke-dashoffset: 138; }
+    }
+    @keyframes barGrow {
+      from { width: 0%; }
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .anim-up { animation: fadeInUp 0.7s cubic-bezier(0.16,1,0.3,1) both; }
+    .anim-up-1 { animation-delay: 0s; }
+    .anim-up-2 { animation-delay: 0.1s; }
+    .anim-up-3 { animation-delay: 0.2s; }
+    .anim-up-4 { animation-delay: 0.3s; }
+    .anim-up-5 { animation-delay: 0.4s; }
+    .anim-up-6 { animation-delay: 0.5s; }
+
+    .anim-float { animation: float 6s ease-in-out infinite; }
+    .anim-float-delayed { animation: float 6s 1s ease-in-out infinite; }
+    .anim-float-delayed-2 { animation: float 6s 2s ease-in-out infinite; }
+
+    /* Scan line on hover */
+    .scan-card { position: relative; overflow: hidden; }
+    .scan-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 2px;
+      background: linear-gradient(90deg, transparent, #00F0FF, transparent);
+      transform: translateY(-100%);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .scan-card:hover::after {
+      opacity: 0.6;
+      animation: scan-line 1.5s ease-in-out;
+    }
+
+    /* Grid background */
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(0,240,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,240,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+    }
+
+    /* Noise overlay */
+    .noise-overlay::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      opacity: 0.025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Glow button */
+    .btn-glow {
+      background: #00F0FF;
+      color: #0A0A0F;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      border-radius: 10px;
+      padding: 14px 28px;
+      font-size: 16px;
+      box-shadow: 0 0 20px rgba(0,240,255,0.2);
+      transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .btn-glow:hover {
+      box-shadow: 0 0 35px rgba(0,240,255,0.4);
+      transform: translateY(-2px);
+    }
+    .btn-ghost {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: #8B8FA3;
+      border-radius: 10px;
+      padding: 13px 24px;
+      font-size: 15px;
+      font-weight: 600;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .btn-ghost:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.12);
+      color: #EEF0F6;
+    }
+
+    /* Score ring */
+    .score-ring-track { stroke: rgba(255,255,255,0.06); }
+    .score-ring-fill {
+      stroke-linecap: round;
+      transform: rotate(-90deg);
+      transform-origin: center;
+      animation: scoreFill 2s ease-out forwards;
+    }
+
+    /* ===== PIPELINE-SPECIFIC ===== */
+    .kanban-column {
+      min-width: 300px;
+      flex: 1;
+    }
+    .kanban-board {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 16px;
+    }
+    .kanban-board::-webkit-scrollbar {
+      height: 6px;
+    }
+    .kanban-board::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.03);
+      border-radius: 3px;
+    }
+    .kanban-board::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.08);
+      border-radius: 3px;
+    }
+    .kanban-board::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,255,255,0.14);
+    }
+    .kanban-column {
+      scroll-snap-align: start;
+    }
+
+    .candidate-card {
+      transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+      cursor: grab;
+    }
+    .candidate-card:hover {
+      border-color: rgba(0,240,255,0.2) !important;
+      transform: translateY(-2px);
+    }
+
+    /* Sidebar */
+    .sidebar-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #8B8FA3;
+      transition: all 0.2s;
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      margin-left: -3px;
+    }
+    .sidebar-nav-item:hover {
+      color: #EEF0F6;
+      background: rgba(255,255,255,0.04);
+    }
+    .sidebar-nav-item.active {
+      color: #00F0FF;
+      background: rgba(0,240,255,0.08);
+      border-left-color: #00F0FF;
+    }
+
+    /* Mobile sidebar toggle */
+    @media (max-width: 767px) {
+      .sidebar { display: none; }
+      .sidebar.open { display: flex; position: fixed; z-index: 100; }
+      .main-content { margin-left: 0 !important; }
+    }
+  </style>
+</head>
+
+<body class="noise-overlay antialiased overflow-x-hidden">
+
+  <!-- ============================================ -->
+  <!-- MOBILE TOP NAV                               -->
+  <!-- ============================================ -->
+  <div class="md:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-bg-secondary border-b border-[rgba(255,255,255,0.06)] flex items-center justify-between px-4">
+    <button onclick="document.getElementById('sidebar').classList.toggle('open')" class="text-text-secondary hover:text-text-primary transition-colors">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+    <a href="index.html" class="flex items-center gap-2">
+      <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+        <rect width="28" height="28" rx="7" fill="url(#lgm)"/>
+        <path d="M8 14L12 18L20 10" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <defs><linearGradient id="lgm" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#00F0FF"/><stop offset="1" stop-color="#0080FF"/></linearGradient></defs>
+      </svg>
+      <span class="font-display font-bold text-sm">IntelliHire</span>
+    </a>
+    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-blue-500 flex items-center justify-center text-[10px] font-bold text-bg-primary">RC</div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- SIDEBAR (260px)                              -->
+  <!-- ============================================ -->
+  <aside id="sidebar" class="sidebar fixed top-0 left-0 bottom-0 w-[260px] bg-bg-secondary border-r border-[rgba(255,255,255,0.06)] flex-col z-50 hidden md:flex">
+    <!-- Logo -->
+    <div class="px-6 h-16 flex items-center gap-2.5 border-b border-[rgba(255,255,255,0.06)]">
+      <a href="index.html" class="flex items-center gap-2.5">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect width="28" height="28" rx="7" fill="url(#lgs)"/>
+          <path d="M8 14L12 18L20 10" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs><linearGradient id="lgs" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#00F0FF"/><stop offset="1" stop-color="#0080FF"/></linearGradient></defs>
+        </svg>
+        <span class="font-display font-bold text-lg tracking-tight">IntelliHire</span>
+      </a>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 px-4 py-6 space-y-1">
+      <a href="dashboard.html" class="sidebar-nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+        </svg>
+        Dashboard
+      </a>
+      <a href="pipeline.html" class="sidebar-nav-item active">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="4.5" height="16" rx="1"/><rect x="9.75" y="8" width="4.5" height="12" rx="1"/><rect x="16.5" y="6" width="4.5" height="14" rx="1"/>
+        </svg>
+        Pipeline
+      </a>
+      <a href="candidate.html" class="sidebar-nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+        </svg>
+        Candidates
+      </a>
+      <a href="#" class="sidebar-nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a4 4 0 00-8 0v2"/>
+        </svg>
+        Jobs
+      </a>
+      <a href="#" class="sidebar-nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 3v18h18"/><path d="M7 16l4-5 4 3 6-7"/>
+        </svg>
+        Analytics
+      </a>
+
+      <div class="pt-6 mt-6 border-t border-[rgba(255,255,255,0.06)]">
+        <a href="#" class="sidebar-nav-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+          </svg>
+          Settings
+        </a>
+      </div>
+    </nav>
+
+    <!-- User info -->
+    <div class="px-4 py-4 border-t border-[rgba(255,255,255,0.06)]">
+      <div class="flex items-center gap-3 px-2">
+        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-blue-500 flex items-center justify-center text-[11px] font-bold text-bg-primary flex-shrink-0">RC</div>
+        <div class="min-w-0">
+          <div class="text-sm font-semibold text-text-primary truncate">Rachel Chen</div>
+          <div class="text-xs text-text-tertiary truncate">Talent Lead</div>
+        </div>
+        <button class="ml-auto text-text-tertiary hover:text-text-secondary transition-colors flex-shrink-0">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============================================ -->
+  <!-- MAIN CONTENT                                 -->
+  <!-- ============================================ -->
+  <div class="main-content md:ml-[260px] min-h-screen pt-14 md:pt-0">
+
+    <!-- ========== HEADER BAR ========== -->
+    <header class="sticky top-0 z-40 bg-bg-primary/80 backdrop-blur-xl border-b border-[rgba(255,255,255,0.06)]">
+      <div class="flex items-center justify-between px-6 h-16 gap-4">
+        <!-- Left: Title + Filters -->
+        <div class="flex items-center gap-5 min-w-0">
+          <h1 class="font-display font-bold text-xl md:text-2xl whitespace-nowrap">Candidate Pipeline</h1>
+          <div class="hidden lg:flex items-center gap-2">
+            <!-- All Jobs filter -->
+            <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-bg-card border border-[rgba(255,255,255,0.06)] text-sm text-text-secondary hover:text-text-primary hover:border-[rgba(255,255,255,0.12)] transition-all">
+              All Jobs
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <!-- All Sources filter -->
+            <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-bg-card border border-[rgba(255,255,255,0.06)] text-sm text-text-secondary hover:text-text-primary hover:border-[rgba(255,255,255,0.12)] transition-all">
+              All Sources
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Center: Search -->
+        <div class="hidden md:flex flex-1 max-w-md">
+          <div class="relative w-full">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" placeholder="Search candidates..." class="w-full bg-bg-card border border-[rgba(255,255,255,0.06)] rounded-xl pl-10 pr-4 py-2 text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-accent/30 focus:ring-1 focus:ring-accent/20 transition-all">
+          </div>
+        </div>
+
+        <!-- Right: View toggle + Notification + Avatar -->
+        <div class="flex items-center gap-3">
+          <!-- View toggle -->
+          <div class="hidden sm:flex items-center bg-bg-card border border-[rgba(255,255,255,0.06)] rounded-lg p-0.5">
+            <!-- Kanban (active) -->
+            <button class="p-1.5 rounded-md bg-accent/10 text-accent" title="Kanban view">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="4.5" height="16" rx="1"/><rect x="9.75" y="4" width="4.5" height="10" rx="1"/><rect x="16.5" y="4" width="4.5" height="13" rx="1"/>
+              </svg>
+            </button>
+            <!-- List -->
+            <button class="p-1.5 rounded-md text-text-tertiary hover:text-text-secondary transition-colors" title="List view">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+            </button>
+          </div>
+
+          <!-- Notification bell -->
+          <button class="relative p-2 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-bg-card transition-all">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+            </svg>
+            <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-accent-secondary rounded-full"></span>
+          </button>
+
+          <!-- Avatar -->
+          <div class="hidden md:flex w-8 h-8 rounded-full bg-gradient-to-br from-accent to-blue-500 items-center justify-center text-[10px] font-bold text-bg-primary cursor-pointer">RC</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ========== KANBAN BOARD ========== -->
+    <div class="p-4 md:p-6">
+      <!-- Pipeline summary bar -->
+      <div class="flex items-center gap-4 mb-5 text-sm text-text-secondary anim-up anim-up-1">
+        <span class="font-medium text-text-primary">110 candidates</span>
+        <span class="w-1 h-1 bg-text-tertiary rounded-full"></span>
+        <span>5 active roles</span>
+        <span class="w-1 h-1 bg-text-tertiary rounded-full"></span>
+        <span>Updated 2 min ago</span>
+      </div>
+
+      <!-- The Kanban Board -->
+      <div class="kanban-board anim-up anim-up-2">
+
+        <!-- ====== COLUMN: APPLIED ====== -->
+        <div class="kanban-column flex flex-col">
+          <!-- Column header -->
+          <div class="mb-3">
+            <div class="h-[2px] bg-accent rounded-full mb-3"></div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <h3 class="font-display font-semibold text-sm text-text-primary">Applied</h3>
+                <span class="text-[11px] font-bold bg-accent/15 text-accent px-2 py-0.5 rounded-full">47</span>
+              </div>
+              <button class="text-text-tertiary hover:text-text-secondary transition-colors" title="Add candidate">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+            </div>
+          </div>
+          <!-- Cards -->
+          <div class="flex flex-col gap-3 flex-1">
+            <!-- Card: Sarah Kim -->
+            <a href="candidate.html" class="candidate-card scan-card block bg-bg-card border border-[rgba(255,255,255,0.06)] rounded-xl p-4">
+              <div class="flex items-start justify-between mb-2.5">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0">SK</div>
+                  <div class="min-w-0">
+                    <div class="font-semibold text-sm text-text-primary">Sarah Kim</div>
+                    <div class="text-[13px] text-text-secondary truncate">Senior Frontend Engineer</div>
+                  </div>
+                </div>
+                <button class="text-text-tertiary hover:text-text-secondary p-0.5 flex-shrink-0" onclick="event.preventDefault()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                </button>
+              </div>
+              <!-- Score ring -->
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex gap-1.5 flex-wrap">
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-accent/10 text-accent border border-accent/15">React</span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-accent/10 text-accent border border-accent/15">TypeScript</span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-accent/10 text-accent border border-accent/15">Node.js</span>
+                </div>
+                <div class="relative w-10 h-10 flex-shrink-0">
+                  <svg viewBox="0 0 100 100" class="w-full h-full">
+                    <circle cx="50" cy="50" r="42" fill="none" class="score-ring-track" stroke-width="6"/>
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="#00F0FF" class="score-ring-fill" stroke-width="6" stroke-dasharray="264" stroke-dashoffset="16"/>
+                  </svg>
+                  <span class="absolute inset-0 flex items-center justify-center font-display font-extrabold text-[10px] text-accent">94</span>
+                </div>
+              </div>
+              <!-- Footer -->
+              <div class="flex items-center justify-between text-[11px] text-text-tertiary">
+                <span>Applied 2h ago</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+              </div>
+            </a>
+
+            <!-- Card: John Park -->
+            <a href="candidate.html" class="candidate-card scan-card block bg-bg-card border border-[rgba(255,255,255,0.06)] rounded-xl p-4">
+              <div class="flex items-start justify-between mb-2.5">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0">JP</div>
+                  <div class="min-w-0">
+                    <div class="font-semibold text-sm text-text-primary">John Park</div>
+                    <div class="text-[13px] text-text-secondary truncate">Data Scientist</div>
+                  </div>
+                </div>
+                <button class="text-text-tertiary hover:text-text-secondary p-0.5 flex-shrink-0" onclick="event.preventDefault()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                </button>
+              </div>
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex gap-1.5 flex-wrap">
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-accent/10 text-accent border border-accent/15">Python</span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[rgba(168,85,247,0.1)] text-[#A855F7] border border-[rgba(168,85,247,0.15)]">TensorFlow</span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-accent/10 text-accent border border-accent/15">SQL</span>
+                </div>
+                <div class="relative w-10 h-10 flex-shrink-0">
+                  <svg viewBox="0 0 100 100" class="w-full h-full">
+                    <circle cx="50" cy="50" r="42" fill="none" class="score-ring-track" stroke-width="6"/>
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="#00F0FF" class="score-ring-fill" stroke-width="6" stroke-dasharray="264" stroke-dashoffset="34"/>
+                  </svg>
+                  <span class="absolute inset-0 flex items-center justify-center font-display font-extrabold text-[10px] text-accent">87</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-text-tertiary">
+                <span>Applied 5h ago</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+              </div>
+            </a>
+
+            <!-- Card: Emma Wilson -->
+            <a href="candidate.html" class="candidate-card scan-card block bg-bg-card border border-[rgba(255,255,255,0.06)] rounded-xl p-4">
+              <div class="flex items-start justify-between mb-2.5">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0">EW</div>
+                  <div class="min-w-0">
+                    <div class="font-semibold text-sm text-text-primary">Emma Wilson</div>
+                    <div class="text-[13px] text-text-secondary truncate">Product Designer</div>
+                  </div>
+                </div>
+                <button class="text-text-tertiary hover:text-text-secondary p-0.5 flex-shrink-0" onclick="event.preventDefault()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                </button>
+              </div>
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex gap-1.5 flex-wrap">
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[rgba(168,85,247,0.1)] text-[#A855F7] border border-[rgba(168,85,247,0.15)]">Figma</span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[rgba(168,85,247,0.1)] text-[#A855F7] border border-[rgba(168,85,247,0.15)]">UX Research</span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-accent/10 text-accent border border-accent/15">Prototyping</span>
+                </div>
+                <div class="relative w-10 h-10 flex-shrink-0">
+                  <svg viewBox="0 0 100 100" class="w-full h-full">
+                    <circle cx="50" cy="50" r="42" fill="none" class="score-ring-track" stroke-width="6"/>
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="#00F0FF" class="score-ring-fill" stroke-width="6" stroke-dasharray="264" stroke-dashoffset="48"/>
+                  </svg>
+                  <span class="absolute inset-0 flex items-center justify-center font-display font-extrabold text-[10px] text-accent">82</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-text-tertiary">
+                <span>Applied 1d ago</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </div>
+            </a>
+
+            <!-- More link -->
+            <div class="text-center py-2">
+              <button class="text-[12px] text-text-tertiary hover:text-accent transition-colors font-medium">+ 44 more candidates</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== COLUMN: SCREENING ====== -->
+        <div class="kanban-column flex flex-col">
+          <div class="mb-3">
+            <div class="h-[2px] bg-warning rounded-full mb-3"></div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <h3 class="font-display font-semibold text-sm text-text-primary">Screening</h3>
+                <span class="text-[11px] font-bold bg-warning/15 text-warning px-2 py-0.5 rounded-full">32</span>
+              </div>
+              <button class="text-text-tertiary hover:text-text-secondary transition-colors" title="Add candidate">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="flex flex-col gap-3 flex-1">
+            <!-- Card: James Wu -->
+            <a href="candidate.html" class="candidate-card scan-card block bg-bg-card border border-[rgba(255,255,255,0.06)] rounded-xl p-4">
+              <div class="flex items-start justify-between mb-2.5">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0">JW</div>
+                  <div class="min-w-0">
+                    <div class="font-semibold text-sm text-text-primary">James Wu</div>
+                    <div class="text-[13px] text-text-secondary truncate">Data Scientist</div>
+                  </div>
+                </div>
+                <button class="text-text-tertiary hover:text-text-secondary p-0.5 flex-shrink-0" onclick="event.preventDefault()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                </button>
+              </div>
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex gap-1.5 flex-wrap">
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-accent/10 text-accent border border-accent/15">PyTorch</span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-accent/10 text-accent border border-accent/15">ML</span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[rgba(168,85,247,0.1)] text-[#A855F7] border border-[rgba(168,85,247,0.15)]">Statistics</span>
+                </div>
+                <div class="relative w-10 h-10 flex-shrink-0">
+                  <svg viewBox="0 0 100 100" class="w-full h-full">
+                    <circle cx="50" cy="50" r="42" fill="none" class="score-ring-track" stroke-width="6"/>
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="#FFAA00" class="score-ring-fill" stroke-width="6" stroke-dasharray="264" stroke-dashoffset="24"/>
+                  </svg>
+                  <span class="absolute inset-0 flex items-center justify-center font-display font-extrabold text-[10px] text-warning">91</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-text-tertiary">
+                <span>1d in stage</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+              </div>
+            </a>
+
+            <!-- Card: Lisa Chen -->
+            <a href="candidate.html" class="candidate-card scan-card block bg-bg-card border border-[rgba(255,255,255,0.06)] rounded-xl p-4">
+              <div class="flex items-start justify-between mb-2.5">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-rose-400 to-pink-500 flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0">LC</div>
+                  <div class="min-w-0">
+                    <div class="font-semibold text-sm text-text-primary">Lisa Chen</div>
+                    <div class="text-[13px] text-text-secondary truncate">Frontend Engineer</div>
+                  </div>
+                </div>
+                <button class="text-text-tertiary hover:text-text-secondary p-0.5 flex-shrink-0" onclick="event.preventDefault()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                </button>
+              </div>
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex gap-1.5 flex-wrap">
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-accent/10 text-accent border border-accent/15">Vue.js</span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-accent/10 text-accent border border-accent/15">CSS</span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-accent/10 text-accent border border-accent/15">JavaScript</span>
+                </div>
+                <div class="relative w-10 h-10 flex-shrink-0">
+                  <svg viewBox="0 0 100 100" class="w-full h-full">
+                    <circle cx="50" cy="50" r="42" fill="none" class="score-ring-track" stroke-width="6"/>
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="#FFAA00" class="score-ring-fill" stroke-width="6" stroke-dasharray="264" stroke-dashoffset="58"/>
+                  </svg>
+                  <span class="absolute inset-0 flex items-center justify-center font-display font-extrabold text-[10px] text-warning">78</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-text-tertiary">
+                <span>2d in stage</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+              </div>
+            </a>
+
+            <div class="text-center py-2">
+              <button class="text-[12px] text-text-tertiary hover:text-accent transition-colors font-medium">+ 30 more candidates</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== COLUMN: INTERVIEW ====== -->
+        <div class="kanban-column flex flex-col">
+          <div class="mb-3">
+            <div class="h-[2px] bg-[#A855F7] rounded-full mb-3"></div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <h3 class="font-display font-semibold text-sm text-text-primary">Interview</h3>
+                <span class="text-[11px] font-bold bg-[rgba(168,85,247,0.15)] text-[#A855F7] px-2 py-0.5 rounded-full">18</span>
+              </div>
+              <button class="text-text-tertiary hover:text-text-secondary transition-colors" title="Add candidate">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="flex flex-col gap-3 flex-1">
+            <!-- Card: Maria Lopez -->
+            <a href="candidate.html" class="candidate-card scan-card block bg-bg-card border border-[rgba(255,255,255,0.06)] rounded-xl p-4">
+              <div class="flex items-start justify-between mb-2.5">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0">ML</div>
+                  <div class="min-w-0">
+                    <div class="font-semibold text-sm text-text-primary">Maria Lopez</div>
+                    <div class="text-[13px] text-text-secondary truncate">Product Designer</div>
+                  </div>
+                </div>
+                <button class="text-text-tertiary hover:text-text-secondary p-0.5 flex-shrink-0" onclick="event.preventDefault()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                </button>
+              </div>
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex gap-1.5 flex-wrap">
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[rgba(168,85,247,0.1)] text-[#A855F7] border border-[rgba(168,85,247,0.15)]">Figma</span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-accent/10 text-accent border border-accent/15">Design Systems</span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-accent/10 text-accent border border-accent/15">CSS</span>
+                </div>
+                <div class="relative w-10 h-10 flex-shrink-0">
+                  <svg viewBox="0 0 100 100" class="w-full h-full">
+                    <circle cx="50" cy="50" r="42" fill="none" class="score-ring-track" stroke-width="6"/>
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="#A855F7" class="score-ring-fill" stroke-width="6" stroke-dasharray="264" stroke-dashoffset="32"/>
+                  </svg>
+                  <span class="absolute inset-0 flex items-center justify-center font-display font-extrabold text-[10px] text-[#A855F7]">88</span>
+                </div>
+              </div>
+              <!-- Interview badge -->
+              <div class="flex items-center gap-2 mb-2 px-2.5 py-1.5 bg-[rgba(168,85,247,0.08)] border border-[rgba(168,85,247,0.12)] rounded-lg">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                <span class="text-[11px] font-medium text-[#A855F7]">Tomorrow 10:00 AM</span>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-text-tertiary">
+                <span>3d in stage</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+              </div>
+            </a>
+
+            <!-- Card: Alex Rivera -->
+            <a href="candidate.html" class="candidate-card scan-card block bg-bg-card border border-[rgba(255,255,255,0.06)] rounded-xl p-4">
+              <div class="flex items-start justify-between mb-2.5">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0">AR</div>
+                  <div class="min-w-0">
+                    <div class="font-semibold text-sm text-text-primary">Alex Rivera</div>
+                    <div class="text-[13px] text-text-secondary truncate">DevOps Engineer</div>
+                  </div>
+                </div>
+                <button class="text-text-tertiary hover:text-text-secondary p-0.5 flex-shrink-0" onclick="event.preventDefault()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                </button>
+              </div>
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex gap-1.5 flex-wrap">
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-accent/10 text-accent border border-accent/15">AWS</span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-accent/10 text-accent border border-accent/15">Docker</span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-accent/10 text-accent border border-accent/15">Kubernetes</span>
+                </div>
+                <div class="relative w-10 h-10 flex-shrink-0">
+                  <svg viewBox="0 0 100 100" class="w-full h-full">
+                    <circle cx="50" cy="50" r="42" fill="none" class="score-ring-track" stroke-width="6"/>
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="#A855F7" class="score-ring-fill" stroke-width="6" stroke-dasharray="264" stroke-dashoffset="40"/>
+                  </svg>
+                  <span class="absolute inset-0 flex items-center justify-center font-display font-extrabold text-[10px] text-[#A855F7]">85</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mb-2 px-2.5 py-1.5 bg-[rgba(168,85,247,0.08)] border border-[rgba(168,85,247,0.12)] rounded-lg">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                <span class="text-[11px] font-medium text-[#A855F7]">Mar 7, 2:00 PM</span>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-text-tertiary">
+                <span>2d in stage</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+              </div>
+            </a>
+
+            <div class="text-center py-2">
+              <button class="text-[12px] text-text-tertiary hover:text-accent transition-colors font-medium">+ 16 more candidates</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== COLUMN: OFFER ====== -->
+        <div class="kanban-column flex flex-col">
+          <div class="mb-3">
+            <div class="h-[2px] bg-success rounded-full mb-3"></div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <h3 class="font-display font-semibold text-sm text-text-primary">Offer</h3>
+                <span class="text-[11px] font-bold bg-success/15 text-success px-2 py-0.5 rounded-full">8</span>
+              </div>
+              <button class="text-text-tertiary hover:text-text-secondary transition-colors" title="Add candidate">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="flex flex-col gap-3 flex-1">
+            <!-- Card: David Nguyen -->
+            <a href="candidate.html" class="candidate-card scan-card block bg-bg-card border border-[rgba(255,255,255,0.06)] rounded-xl p-4">
+              <div class="flex items-start justify-between mb-2.5">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0">DN</div>
+                  <div class="min-w-0">
+                    <div class="font-semibold text-sm text-text-primary">David Nguyen</div>
+                    <div class="text-[13px] text-text-secondary truncate">Backend Engineer</div>
+                  </div>
+                </div>
+                <button class="text-text-tertiary hover:text-text-secondary p-0.5 flex-shrink-0" onclick="event.preventDefault()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                </button>
+              </div>
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex gap-1.5 flex-wrap">
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-accent/10 text-accent border border-accent/15">Java</span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-accent/10 text-accent border border-accent/15">Spring Boot</span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-accent/10 text-accent border border-accent/15">PostgreSQL</span>
+                </div>
+                <div class="relative w-10 h-10 flex-shrink-0">
+                  <svg viewBox="0 0 100 100" class="w-full h-full">
+                    <circle cx="50" cy="50" r="42" fill="none" class="score-ring-track" stroke-width="6"/>
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="#00E68A" class="score-ring-fill" stroke-width="6" stroke-dasharray="264" stroke-dashoffset="21"/>
+                  </svg>
+                  <span class="absolute inset-0 flex items-center justify-center font-display font-extrabold text-[10px] text-success">92</span>
+                </div>
+              </div>
+              <!-- Offer badge -->
+              <div class="flex items-center gap-2 mb-2 px-2.5 py-1.5 bg-success/8 border border-success/12 rounded-lg">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00E68A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                <span class="text-[11px] font-medium text-success">Offer sent 1d ago</span>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-text-tertiary">
+                <span>1d in stage</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+              </div>
+            </a>
+
+            <div class="text-center py-2">
+              <button class="text-[12px] text-text-tertiary hover:text-accent transition-colors font-medium">+ 7 more candidates</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== COLUMN: HIRED ====== -->
+        <div class="kanban-column flex flex-col">
+          <div class="mb-3">
+            <div class="h-[2px] bg-[#00FF9D] rounded-full mb-3"></div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <h3 class="font-display font-semibold text-sm text-text-primary">Hired</h3>
+                <span class="text-[11px] font-bold bg-[rgba(0,255,157,0.15)] text-[#00FF9D] px-2 py-0.5 rounded-full">5</span>
+              </div>
+              <button class="text-text-tertiary hover:text-text-secondary transition-colors" title="Add candidate">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="flex flex-col gap-3 flex-1">
+            <!-- Card: Anna Zhang -->
+            <a href="candidate.html" class="candidate-card scan-card block bg-bg-card border border-[rgba(255,255,255,0.06)] rounded-xl p-4">
+              <div class="flex items-start justify-between mb-2.5">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-lime-400 to-green-600 flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0">AZ</div>
+                  <div class="min-w-0">
+                    <div class="font-semibold text-sm text-text-primary">Anna Zhang</div>
+                    <div class="text-[13px] text-text-secondary truncate">ML Engineer</div>
+                  </div>
+                </div>
+                <button class="text-text-tertiary hover:text-text-secondary p-0.5 flex-shrink-0" onclick="event.preventDefault()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                </button>
+              </div>
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex gap-1.5 flex-wrap">
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-accent/10 text-accent border border-accent/15">Python</span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[rgba(168,85,247,0.1)] text-[#A855F7] border border-[rgba(168,85,247,0.15)]">Deep Learning</span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-accent/10 text-accent border border-accent/15">MLOps</span>
+                </div>
+                <div class="relative w-10 h-10 flex-shrink-0">
+                  <svg viewBox="0 0 100 100" class="w-full h-full">
+                    <circle cx="50" cy="50" r="42" fill="none" class="score-ring-track" stroke-width="6"/>
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="#00FF9D" class="score-ring-fill" stroke-width="6" stroke-dasharray="264" stroke-dashoffset="11"/>
+                  </svg>
+                  <span class="absolute inset-0 flex items-center justify-center font-display font-extrabold text-[10px] text-[#00FF9D]">96</span>
+                </div>
+              </div>
+              <!-- Hired badge -->
+              <div class="flex items-center gap-2 mb-2 px-2.5 py-1.5 bg-[rgba(0,255,157,0.06)] border border-[rgba(0,255,157,0.12)] rounded-lg">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00FF9D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                <span class="text-[11px] font-medium text-[#00FF9D]">Hired Feb 28</span>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-text-tertiary">
+                <span>4d in stage</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+              </div>
+            </a>
+
+            <div class="text-center py-2">
+              <button class="text-[12px] text-text-tertiary hover:text-accent transition-colors font-medium">+ 4 more candidates</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end kanban-board -->
+    </div><!-- end main padding -->
+
+  </div><!-- end main-content -->
+
+  <!-- ============================================ -->
+  <!-- PRO-MAX PIPELINE SCRIPT                      -->
+  <!-- ============================================ -->
+  <script>
+    // ============ SIDEBAR TOGGLE ============
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar    = document.getElementById('sidebar');
+    const overlay    = document.getElementById('sidebarOverlay');
+
+    if (menuToggle) {
+      menuToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('open');
+      });
+      overlay?.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('open');
+      });
+    }
+
+    // ============ TOAST SYSTEM ============
+    function showToast(msg, type = 'info') {
+      const c = { success: '#00E68A', danger: '#FF3D71', info: '#00F0FF', warning: '#FFAA00' };
+      const ic = { success: '✓', danger: '✕', info: 'ℹ', warning: '⚠' };
+      const color = c[type] || c.info;
+      const toast = document.createElement('div');
+      toast.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;background:#16161F;border:1px solid ${color}22;border-left:3px solid ${color};color:#EEF0F6;padding:14px 18px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;box-shadow:0 8px 40px rgba(0,0,0,0.5);display:flex;align-items:center;gap:10px;max-width:320px;animation:pToastIn 0.4s cubic-bezier(0.16,1,0.3,1) both;cursor:pointer`;
+      toast.innerHTML = `<span style="color:${color};flex-shrink:0">${ic[type]||ic.info}</span>${msg}`;
+      if (!document.getElementById('p-toast-css')) {
+        const s = document.createElement('style');
+        s.id = 'p-toast-css';
+        s.textContent = '@keyframes pToastIn{from{opacity:0;transform:translateY(12px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}';
+        document.head.appendChild(s);
+      }
+      document.body.appendChild(toast);
+      toast.addEventListener('click', () => toast.remove());
+      setTimeout(() => { toast.style.opacity='0'; toast.style.transition='opacity 0.3s'; setTimeout(() => toast.remove(), 320); }, 4000);
+    }
+
+    // ============ KANBAN CARD INTERACTIONS ============
+    const kanbanCards = document.querySelectorAll('.kanban-card, a[href="candidate.html"]');
+    kanbanCards.forEach(card => {
+      card.addEventListener('click', (e) => {
+        // Don't intercept actual links
+        if (card.tagName === 'A') return;
+        e.preventDefault();
+        showToast('Opening candidate profile...', 'info');
+      });
+    });
+
+    // ============ COLUMN HEADER CLICK (add candidate) ============
+    document.querySelectorAll('.kanban-col-header button, button').forEach(btn => {
+      if (btn.textContent?.includes('+') || btn.querySelector('svg')) {
+        if (btn.closest('.kanban-board, [class*="kanban"]') || btn.parentElement?.querySelector('[class*="col"]')) {
+          btn.addEventListener('click', () => showToast('Adding new candidate...', 'info'));
+        }
+      }
+    });
+
+    // ============ CURSOR GLOW ============
+    const cursor = document.createElement('div');
+    cursor.style.cssText = 'position:fixed;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(0,240,255,0.03) 0%,transparent 70%);pointer-events:none;transform:translate(-50%,-50%);z-index:0;opacity:0;transition:opacity 0.5s;will-change:transform;left:0;top:0;';
+    document.body.appendChild(cursor);
+    let raf = false;
+    document.addEventListener('mousemove', (e) => {
+      if (!raf) { raf = true; requestAnimationFrame(() => { cursor.style.left=e.clientX+'px'; cursor.style.top=e.clientY+'px'; cursor.style.opacity='1'; raf=false; }); }
+    }, { passive: true });
+    document.addEventListener('mouseleave', () => cursor.style.opacity = '0');
+
+    // ============ KEYBOARD SHORTCUT ============
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        const s = document.querySelector('input[type="text"]');
+        if (s) { s.focus(); s.select(); }
+      }
+    });
+  </script>
+
+</body>
+</html>

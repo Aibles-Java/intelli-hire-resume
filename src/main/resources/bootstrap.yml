@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: resume-service
+  cloud:
+    vault:
+      host: ${VAULT_HOST:localhost}
+      port: ${VAULT_PORT:8200}
+      scheme: http
+      authentication: TOKEN
+      token: ${VAULT_TOKEN}
+      kv:
+        enabled: true
+        backend: secret
+        default-context: shared
+        backend-version: 2
+      fail-fast: true
+      config:
+        lifecycle:
+          enabled: false

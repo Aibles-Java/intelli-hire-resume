@@ -1,0 +1,53 @@
+services:
+
+  redis:
+    image: redis:7-alpine
+    container_name: intellihire-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: intellihire-minio
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    ports:
+      - "${MINIO_PORT:-9000}:9000"          # API endpoint
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"  # Web Console
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Tạo bucket "resume-files" tự động sau khi MinIO sẵn sàng
+  minio-init:
+    image: minio/mc:latest
+    container_name: intellihire-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      mc alias set local http://minio:9000 ${MINIO_ACCESS_KEY:-minioadmin} ${MINIO_SECRET_KEY:-minioadmin};
+      mc mb --ignore-existing local/${MINIO_BUCKET:-resume-files};
+      mc anonymous set download local/${MINIO_BUCKET:-resume-files};
+      echo 'Bucket created successfully';
+      "
+    restart: on-failure
+
+volumes:
+  redis_data:
+  minio_data:
