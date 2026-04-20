@@ -1,6 +1,6 @@
 spring:
   application:
-    name: intellihireresume
+    name: resume-service
   cloud:
     vault:
       host: ${VAULT_HOST:localhost}

@@ -47,7 +47,7 @@ public class HeaderAuthFilter extends OncePerRequestFilter {
 
         String userRole = request.getHeader("X-User-Role");
         if (userRole == null || userRole.isBlank()) {
-            userRole = "ROLE_USER";
+            userRole = "USER";
         }
 
         request.setAttribute("userId", userId);
